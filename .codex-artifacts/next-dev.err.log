@@ -1,0 +1,447 @@
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-ultrasound-trend-chart.tsx (426:16) @ Line
+ ⨯ ReferenceError: Line is not defined
+    at TrendChartCard (./src/components/dashboard/pages/equipment/panels/trend/equipment-ultrasound-trend-chart.tsx:464:127)
+digest: "1415825855"
+[0m [90m 424 |[39m             ) [33m:[39m [36mnull[39m}[0m
+[0m [90m 425 |[39m             {significantRise [33m?[39m ([0m
+[0m[31m[1m>[22m[39m[90m 426 |[39m               [33m<[39m[33mLine[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 427 |[39m                 activeDot[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 428 |[39m                 connectNulls[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 429 |[39m                 dataKey[33m=[39m[32m"riseHighlight"[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-ultrasound-trend-chart.tsx (426:16) @ Line
+ ⨯ ReferenceError: Line is not defined
+    at TrendChartCard (./src/components/dashboard/pages/equipment/panels/trend/equipment-ultrasound-trend-chart.tsx:464:127)
+digest: "1415825855"
+[0m [90m 424 |[39m             ) [33m:[39m [36mnull[39m}[0m
+[0m [90m 425 |[39m             {significantRise [33m?[39m ([0m
+[0m[31m[1m>[22m[39m[90m 426 |[39m               [33m<[39m[33mLine[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 427 |[39m                 activeDot[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 428 |[39m                 connectNulls[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 429 |[39m                 dataKey[33m=[39m[32m"riseHighlight"[39m[0m
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-ultrasound-trend-chart.tsx (426:16) @ Line
+ ⨯ ReferenceError: Line is not defined
+    at TrendChartCard (./src/components/dashboard/pages/equipment/panels/trend/equipment-ultrasound-trend-chart.tsx:464:127)
+digest: "1415825855"
+[0m [90m 424 |[39m             ) [33m:[39m [36mnull[39m}[0m
+[0m [90m 425 |[39m             {significantRise [33m?[39m ([0m
+[0m[31m[1m>[22m[39m[90m 426 |[39m               [33m<[39m[33mLine[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 427 |[39m                 activeDot[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 428 |[39m                 connectNulls[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 429 |[39m                 dataKey[33m=[39m[32m"riseHighlight"[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-ultrasound-trend-chart.tsx (426:16) @ Line
+ ⨯ ReferenceError: Line is not defined
+    at TrendChartCard (./src/components/dashboard/pages/equipment/panels/trend/equipment-ultrasound-trend-chart.tsx:465:127)
+digest: "3132037214"
+[0m [90m 424 |[39m             ) [33m:[39m [36mnull[39m}[0m
+[0m [90m 425 |[39m             {significantRise [33m?[39m ([0m
+[0m[31m[1m>[22m[39m[90m 426 |[39m               [33m<[39m[33mLine[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 427 |[39m                 activeDot[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 428 |[39m                 connectNulls[33m=[39m{[36mfalse[39m}[0m
+[0m [90m 429 |[39m                 dataKey[33m=[39m[32m"riseHighlight"[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-ultrasound-trend-chart.tsx (445:20) @ RiseHighlightOverlay
+ ⨯ ReferenceError: RiseHighlightOverlay is not defined
+    at TrendChartCard (./src/components/dashboard/pages/equipment/panels/trend/equipment-ultrasound-trend-chart.tsx:485:124)
+digest: "490464723"
+[0m [90m 443 |[39m               [33m<[39m[33mCustomized[39m[0m
+[0m [90m 444 |[39m                 component[33m=[39m{[0m
+[0m[31m[1m>[22m[39m[90m 445 |[39m                   [33m<[39m[33mRiseHighlightOverlay[39m[0m
+[0m [90m     |[39m                    [31m[1m^[22m[39m[0m
+[0m [90m 446 |[39m                     clipId[33m=[39m[32m"ultrasound-rise-highlight-clip"[39m[0m
+[0m [90m 447 |[39m                     dataKey[33m=[39m[32m"average"[39m[0m
+[0m [90m 448 |[39m                     fill[33m=[39m[32m"url(#ultrasound-rise-highlight-fill)"[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:51:29)
+digest: "651855558"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:51:29)
+digest: "651855558"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:51:29)
+digest: "651855558"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:52:29)
+digest: "1281142885"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:52:29)
+digest: "1281142885"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:52:29)
+digest: "1281142885"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:53:29)
+digest: "3617018756"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⨯ src\components\dashboard\pages\equipment\panels\trend\equipment-temperature-trend-chart.tsx (107:27) @ buildSignificantRiseSegment
+ ⨯ ReferenceError: buildSignificantRiseSegment is not defined
+    at EquipmentTemperatureTrendChart (./src/components/dashboard/pages/equipment/panels/trend/equipment-temperature-trend-chart.tsx:53:29)
+digest: "3617018756"
+[0m [90m 105 |[39m   [36mconst[39m displayedData [33m=[39m filterTrendDataByXAxisMax(data[33m,[39m xAxisMax)[33m;[39m[0m
+[0m [90m 106 |[39m   [36mconst[39m yAxisMax [33m=[39m getTemperatureYAxisMax(referenceLines[33m,[39m yAxisMaxOverride)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 107 |[39m   [36mconst[39m significantRise [33m=[39m buildSignificantRiseSegment([0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 108 |[39m     displayedData[33m,[39m[0m
+[0m [90m 109 |[39m     xAxisUnitLabel[33m,[39m[0m
+[0m [90m 110 |[39m   )[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\equipment-summary-panel.tsx (98:6) @ RealtimeMetricsGrid
+ ⨯ ReferenceError: RealtimeMetricsGrid is not defined
+    at EquipmentSummaryPanel (./src/components/dashboard/pages/equipment/panels/equipment-summary-panel.tsx:27:101)
+digest: "669006230"
+[0m [90m  96 |[39m     [33m:[39m [36mfalse[39m[33m;[39m[0m
+[0m [90m  97 |[39m   [36mconst[39m metricsGrid [33m=[39m ([0m
+[0m[31m[1m>[22m[39m[90m  98 |[39m     [33m<[39m[33mRealtimeMetricsGrid[39m[0m
+[0m [90m     |[39m      [31m[1m^[22m[39m[0m
+[0m [90m  99 |[39m       averageTemperature[33m=[39m{averageTemperature}[0m
+[0m [90m 100 |[39m       equipmentThresholds[33m=[39m{equipmentThresholds}[0m
+[0m [90m 101 |[39m       isTemperatureExceeded[33m=[39m{isTemperatureExceeded}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\equipment-camera-panel.tsx (889:19) @ label
+ ⨯ ReferenceError: label is not defined
+    at CameraViewport (./src/components/dashboard/pages/equipment/panels/equipment-camera-panel.tsx:973:27)
+digest: "323135719"
+[0m [90m 887 |[39m       [33m<[39m[33mdiv[39m[0m
+[0m [90m 888 |[39m         className[33m=[39m[32m"CameraViewport CameraViewport__container-2 absolute left-2 top-2 z-20 inline-flex items-center gap-1.5 rounded-sm border border-red-400/35 bg-red-500/15 px-2 py-1 text-[10px] font-bold tracking-wide text-red-100"[39m[0m
+[0m[31m[1m>[22m[39m[90m 889 |[39m         title[33m=[39m{[32m`${label} 실시간 스트리밍`[39m}[0m
+[0m [90m     |[39m                   [31m[1m^[22m[39m[0m
+[0m [90m 890 |[39m       [33m>[39m[0m
+[0m [90m 891 |[39m         [33m<[39m[33mspan[39m className[33m=[39m[32m"CameraViewport CameraViewport__label-1 h-2 w-2 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.85)] animate-pulse"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 892 |[39m         [33mLIVE[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (333:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:270:107)
+digest: "3946842568"
+[0m [90m 331 |[39m       [33m>[39m[0m
+[0m [90m 332 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 333 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 334 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 335 |[39m             events[33m=[39m{events}[0m
+[0m [90m 336 |[39m             location[33m=[39m{location}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (334:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:270:107)
+digest: "3946842568"
+[0m [90m 332 |[39m       [33m>[39m[0m
+[0m [90m 333 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 334 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 335 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 336 |[39m             events[33m=[39m{events}[0m
+[0m [90m 337 |[39m             location[33m=[39m{location}[0m
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (334:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:270:107)
+digest: "3946842568"
+[0m [90m 332 |[39m       [33m>[39m[0m
+[0m [90m 333 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 334 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 335 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 336 |[39m             events[33m=[39m{events}[0m
+[0m [90m 337 |[39m             location[33m=[39m{location}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (334:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:270:107)
+digest: "3946842568"
+[0m [90m 332 |[39m       [33m>[39m[0m
+[0m [90m 333 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 334 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 335 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 336 |[39m             events[33m=[39m{events}[0m
+[0m [90m 337 |[39m             location[33m=[39m{location}[0m
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (334:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:270:107)
+digest: "3946842568"
+[0m [90m 332 |[39m       [33m>[39m[0m
+[0m [90m 333 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 334 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 335 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 336 |[39m             events[33m=[39m{events}[0m
+[0m [90m 337 |[39m             location[33m=[39m{location}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (332:12) @ EquipmentStatusTitlePanel
+ ⨯ ReferenceError: EquipmentStatusTitlePanel is not defined
+    at EquipmentDashboardPage (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:267:107)
+digest: "3319395566"
+[0m [90m 330 |[39m       [33m>[39m[0m
+[0m [90m 331 |[39m         [33m<[39m[33mDashboardArea[39m className[33m=[39m[32m"EquipmentDashboardPage__area-title"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 332 |[39m           [33m<[39m[33mEquipmentStatusTitlePanel[39m[0m
+[0m [90m     |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 333 |[39m             equipmentJudgement[33m=[39m{equipmentJudgement}[0m
+[0m [90m 334 |[39m             events[33m=[39m{events}[0m
+[0m [90m 335 |[39m             location[33m=[39m{location}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\equipment-dashboard-page.tsx (482:13) @ judgementClassName
+ ⨯ ReferenceError: judgementClassName is not defined
+    at EquipmentStatusTitlePanel (./src/components/dashboard/pages/equipment/equipment-dashboard-page.tsx:474:209)
+digest: "194218308"
+[0m [90m 480 |[39m           className[33m=[39m{cn([0m
+[0m [90m 481 |[39m             [32m"EquipmentStatusTitlePanel EquipmentStatusTitlePanel__label-1 rounded-md border px-4 py-1.5 text-xl font-black leading-none"[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 482 |[39m             judgementClassName[equipmentJudgement][33m,[39m[0m
+[0m [90m     |[39m             [31m[1m^[22m[39m[0m
+[0m [90m 483 |[39m           )}[0m
+[0m [90m 484 |[39m         [33m>[39m[0m
+[0m [90m 485 |[39m           {judgementLabel[equipmentJudgement]}[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\equipment-trend-panel.tsx (117:9) @ activeRangeConfig
+ ⨯ ReferenceError: getCombinedXAxisMaxOverride is not defined
+    at eval (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:123:105)
+    at EquipmentTrendPanel (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:123:79)
+digest: "1953988716"
+[0m [90m 115 |[39m     () [33m=>[39m[0m
+[0m [90m 116 |[39m       buildChartAxisConfig([0m
+[0m[31m[1m>[22m[39m[90m 117 |[39m         activeRangeConfig[33m,[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 118 |[39m         getCombinedXAxisMaxOverride(temperatureXAxisMax[33m,[39m ultrasoundXAxisMax)[33m,[39m[0m
+[0m [90m 119 |[39m       )[33m,[39m[0m
+[0m [90m 120 |[39m     [activeRangeConfig[33m,[39m temperatureXAxisMax[33m,[39m ultrasoundXAxisMax][33m,[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\equipment-trend-panel.tsx (117:9) @ activeRangeConfig
+ ⨯ ReferenceError: getCombinedXAxisMaxOverride is not defined
+    at eval (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:123:105)
+    at EquipmentTrendPanel (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:123:79)
+digest: "1953988716"
+[0m [90m 115 |[39m     () [33m=>[39m[0m
+[0m [90m 116 |[39m       buildChartAxisConfig([0m
+[0m[31m[1m>[22m[39m[90m 117 |[39m         activeRangeConfig[33m,[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 118 |[39m         getCombinedXAxisMaxOverride(temperatureXAxisMax[33m,[39m ultrasoundXAxisMax)[33m,[39m[0m
+[0m [90m 119 |[39m       )[33m,[39m[0m
+[0m [90m 120 |[39m     [activeRangeConfig[33m,[39m temperatureXAxisMax[33m,[39m ultrasoundXAxisMax][33m,[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\dashboard\pages\equipment\panels\equipment-trend-panel.tsx (117:9) @ activeRangeConfig
+ ⨯ ReferenceError: getCombinedXAxisMaxOverride is not defined
+    at eval (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:125:105)
+    at EquipmentTrendPanel (./src/components/dashboard/pages/equipment/panels/equipment-trend-panel.tsx:125:79)
+digest: "4100757548"
+[0m [90m 115 |[39m     () [33m=>[39m[0m
+[0m [90m 116 |[39m       buildChartAxisConfig([0m
+[0m[31m[1m>[22m[39m[90m 117 |[39m         activeRangeConfig[33m,[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 118 |[39m         getCombinedXAxisMaxOverride(temperatureXAxisMax[33m,[39m ultrasoundXAxisMax)[33m,[39m[0m
+[0m [90m 119 |[39m       )[33m,[39m[0m
+[0m [90m 120 |[39m     [activeRangeConfig[33m,[39m temperatureXAxisMax[33m,[39m ultrasoundXAxisMax][33m,[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Failed to generate static paths for /processes/[processId]/locations/[locationId]/equipment/[equipmentId]:
+Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\processes\[processId]\locations\[locationId]\equipment\[equipmentId]\page.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at mod.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:182:18)
+    at __webpack_require__.f.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:198:28)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:110:67) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\app\\processes\\[processId]\\locations\\[locationId]\\equipment\\[equipmentId]\\page.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\dev\\static-paths-worker.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+ ⨯ Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\processes\[processId]\locations\[locationId]\equipment\[equipmentId]\page.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at mod.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:182:18)
+    at __webpack_require__.f.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:198:28)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:110:67) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\app\\processes\\[processId]\\locations\\[locationId]\\equipment\\[equipmentId]\\page.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\dev\\static-paths-worker.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ],
+  page: '/processes/compression-process/locations/machine-room/equipment/compressor-1'
+}
+ ⨯ Error: Cannot find module './vendor-chunks/@tanstack.js'
+Require stack:
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\processes\[processId]\locations\[locationId]\equipment\[equipmentId]\page.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at mod.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:182:18)
+    at __webpack_require__.f.require (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:198:28)
+    at C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\webpack-runtime.js:110:67) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\.next\\server\\app\\processes\\[processId]\\locations\\[locationId]\\equipment\\[equipmentId]\\page.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\server\\dev\\static-paths-worker.js',
+    'C:\\Users\\user\\vscode project\\CheckLabLive\\checklab-front\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ],
+  page: '/processes/compression-process/locations/machine-room/equipment/compressor-1'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat 'C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/app/_not-found/page' in C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\_not-found\page.js', but to 'Error: Can't resolve '../../../../.next/server/app/_not-found/page' in 'C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/app/_not-found/page (expected C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\_not-found\page.js)
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at resolve commonjs C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/pages/_error' in C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\pages\_error.js', but to 'Error: Can't resolve '../../../../.next/server/pages/_error' in 'C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/pages/_error (expected C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\pages\_error.js)
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at resolve commonjs C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/pages/_app' in C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\pages\_app.js', but to 'Error: Can't resolve '../../../../.next/server/pages/_app' in 'C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/pages/_app (expected C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\pages\_app.js)
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at resolve commonjs C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/app/processes/[processId]/locations/[locationId]/equipment/[equipmentId]/page' in C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\processes\[processId]\locations\[locationId]\equipment\[equipmentId]\page.js', but to 'Error: Can't resolve '../../../../.next/server/app/processes/[processId]/locations/[locationId]/equipment/[equipmentId]/page' in 'C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/app/processes/[processId]/locations/[locationId]/equipment/[equipmentId]/page (expected C:\Users\user\vscode project\CheckLabLive\checklab-front\.next\server\app\processes\[processId]\locations\[locationId]\equipment\[equipmentId]\page.js)
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at resolve commonjs C:\Users\user\vscode project\CheckLabLive\checklab-front\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.

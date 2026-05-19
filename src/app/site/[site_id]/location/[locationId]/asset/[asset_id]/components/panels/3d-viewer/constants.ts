@@ -1,0 +1,111 @@
+import type {
+  CameraPreset,
+  Model3DFile,
+  Viewer3DConfig,
+} from "@/app/layouts/types";
+
+export const DEFAULT_MODEL_3D_FILE: Model3DFile = {
+  label: "기본 PLY 모델",
+  normalizeSize: 120,
+  plyUrl: "/3d/sample.ply",
+  textures: [
+    {
+      enabled: true,
+      id: "base-texture",
+      label: "텍스처 A",
+      role: "baseColor",
+      source: "/3d/sample.png",
+      strength: 1,
+    },
+    {
+      enabled: false,
+      id: "secondary-texture",
+      label: "텍스처 B",
+      role: "emissive",
+      source: "/3d/sample.png",
+      strength: 0.35,
+    },
+  ],
+};
+
+export const DEFAULT_VIEWER_3D_CONFIG: Viewer3DConfig = {
+  autoRotate: false,
+  background: {
+    color: "#111827",
+    fog: {
+      color: "#111827",
+      enabled: false,
+      far: 520,
+      near: 180,
+    },
+    gridColor: "#475569",
+    gridDivisions: 24,
+    gridSize: 180,
+    groundColor: "#0f172a",
+    showAxes: true,
+    showGrid: true,
+    showGround: true,
+  },
+  camera: {
+    damping: true,
+    fov: 45,
+    maxDistance: 640,
+    minDistance: 18,
+    position: { x: 150, y: 105, z: 155 },
+    preset: "isometric",
+    target: { x: 0, y: 0, z: 0 },
+  },
+  controls: {
+    autoRotateSpeed: 0.7,
+    enableFileInputs: true,
+    enablePan: true,
+    enableRotate: true,
+    enableZoom: true,
+    showOptionBar: true,
+  },
+  lighting: {
+    ambientLight: {
+      color: "#ffffff",
+      intensity: 0.56,
+    },
+    directionalLight: {
+      color: "#ffffff",
+      intensity: 1.25,
+      position: { x: 110, y: 170, z: 95 },
+    },
+    hemisphereLight: {
+      color: "#dbeafe",
+      groundColor: "#1e293b",
+      intensity: 0.35,
+    },
+    pointLight: {
+      color: "#67e8f9",
+      distance: 420,
+      enabled: true,
+      intensity: 0.65,
+      position: { x: -115, y: 86, z: -90 },
+    },
+  },
+  model: {
+    castShadow: true,
+    color: "#ffffff",
+    metalness: 0.1,
+    opacity: 1,
+    receiveShadow: true,
+    roughness: 0.72,
+    rotation: { x: -90, y: 0, z: 0 },
+    scale: 1,
+    textureBlend: 1,
+    wireframe: false,
+  },
+};
+
+export const CAMERA_PRESET_LABELS: Record<CameraPreset, string> = {
+  back: "후면",
+  bottom: "하단",
+  front: "정면",
+  isometric: "사선",
+  left: "좌측",
+  right: "우측",
+  top: "상단",
+};

@@ -625,6 +625,7 @@ export function AssetDashboardPage({
             cameraFeeds={remoteSnapshot?.cameraFeeds}
             defaultAssetThresholds={defaultAssetThresholds}
             assetParts={assetParts}
+            assetPartStates={assetPartStates}
             isAddingAssetPart={isAddingAssetPart}
             selectedAssetPartId={selectedAssetPartId}
             assetThresholds={assetThresholds}
@@ -633,6 +634,8 @@ export function AssetDashboardPage({
             onCreateAssetPart={handleCreateAssetPart}
             onSelectAssetPart={setSelectedAssetPartId}
             onUpdateAssetPart={handleUpdateAssetPart}
+            temperatureData={temperatureData}
+            ultrasonicData={ultrasonicData}
             variant="stream"
           />
         </DashboardArea>

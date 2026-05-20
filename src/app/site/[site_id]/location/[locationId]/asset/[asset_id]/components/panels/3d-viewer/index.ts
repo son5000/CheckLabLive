@@ -3,6 +3,12 @@ export {
   DEFAULT_MODEL_3D_FILE,
   DEFAULT_VIEWER_3D_CONFIG,
 } from "./constants";
+export type {
+  Viewer3DAnalysisDraft,
+  Viewer3DAnalysisMode,
+  Viewer3DAnalysisSummary,
+  Viewer3DAnalysisTarget,
+} from "./types";
 export { BackgroundControls } from "./controls/BackgroundControls";
 export { CameraControls } from "./controls/CameraControls";
 export { LightingControls } from "./controls/LightingControls";

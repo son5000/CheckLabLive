@@ -9,7 +9,6 @@ import {
   ControlSection,
   RangeField,
   SegmentedButton,
-  ToggleField,
   Vector3Fields,
 } from "./control-fields";
 
@@ -67,7 +66,7 @@ export function CameraControls({
 
       <div className="CameraControls CameraControls__group-2 grid gap-1">
         <span className="CameraControls CameraControls__label-2 text-[10px] font-semibold text-muted-foreground">
-          타겟
+          대상
         </span>
         <Vector3Fields
           onChange={(target) => onChange({ ...config, target })}
@@ -92,12 +91,6 @@ export function CameraControls({
           value={config.maxDistance ?? 640}
         />
       </div>
-
-      <ToggleField
-        checked={config.damping ?? true}
-        label="부드러운 회전"
-        onChange={(damping) => onChange({ ...config, damping })}
-      />
     </ControlSection>
   );
 }

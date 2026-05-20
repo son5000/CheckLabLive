@@ -13,10 +13,10 @@ import {
   withUpdatedTextureMeta,
   withUpdatedTextureSlot,
 } from "../utils/modelFileUtils";
-import { ControlSection, RangeField, ToggleField } from "./control-fields";
+import { ControlSection, RangeField } from "./control-fields";
 
 const TEXTURE_ROLES: Array<{ label: string; value: Model3DTextureRole }> = [
-  { label: "컬러", value: "baseColor" },
+  { label: "베이직", value: "baseColor" },
   { label: "발광", value: "emissive" },
   { label: "투명", value: "alpha" },
   { label: "거칠기", value: "roughness" },
@@ -29,7 +29,7 @@ export function ModelFileControls({
   modelFile: Model3DFile;
   onChange: (modelFile: Model3DFile) => void;
 }) {
-  const textures = normalizeModelTextures(modelFile);
+  const texture = normalizeModelTextures(modelFile)[0];
 
   return (
     <ControlSection icon={Upload} title="PLY / PNG">
@@ -55,16 +55,12 @@ export function ModelFileControls({
         value={modelFile.normalizeSize ?? 120}
       />
 
-      {[0, 1].map((slotIndex) => (
-        <TextureSlotControls
-          key={slotIndex}
-          label={`PNG 텍스처 ${slotIndex + 1}`}
-          modelFile={modelFile}
-          onChange={onChange}
-          slotIndex={slotIndex}
-          texture={textures[slotIndex]}
-        />
-      ))}
+      <TextureSlotControls
+        label="PNG 텍스처"
+        modelFile={modelFile}
+        onChange={onChange}
+        texture={texture}
+      />
     </ControlSection>
   );
 }
@@ -73,15 +69,15 @@ function TextureSlotControls({
   label,
   modelFile,
   onChange,
-  slotIndex,
   texture,
 }: {
   label: string;
   modelFile: Model3DFile;
   onChange: (modelFile: Model3DFile) => void;
-  slotIndex: number;
   texture?: Model3DTextureFile;
 }) {
+  const slotIndex = 0;
+
   return (
     <div className="TextureSlotControls TextureSlotControls__container-1 grid gap-1.5 rounded-md border border-border/70 bg-card p-2">
       <FilePicker
@@ -93,39 +89,28 @@ function TextureSlotControls({
         }
       />
 
-      <div className="TextureSlotControls TextureSlotControls__row-1 grid grid-cols-[minmax(0,1fr)_6.5rem] gap-1.5">
-        <label className="TextureSlotControls TextureSlotControls__select-field-1 grid min-w-0 gap-1">
-          <span className="TextureSlotControls TextureSlotControls__label-1 text-[10px] font-semibold text-muted-foreground">
-            역할
-          </span>
-          <select
-            className="TextureSlotControls TextureSlotControls__select-1 h-8 min-w-0 rounded-md border border-border bg-background px-2 text-xs font-semibold outline-none"
-            disabled={!texture}
-            onChange={(event) =>
-              onChange(
-                withUpdatedTextureMeta(modelFile, slotIndex, {
-                  role: event.target.value as Model3DTextureRole,
-                }),
-              )
-            }
-            value={texture?.role ?? (slotIndex === 0 ? "baseColor" : "emissive")}
-          >
-            {TEXTURE_ROLES.map((role) => (
-              <option key={role.value} value={role.value}>
-                {role.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <ToggleField
-          checked={texture?.enabled ?? false}
-          label="사용"
-          onChange={(enabled) =>
-            onChange(withUpdatedTextureMeta(modelFile, slotIndex, { enabled }))
+      <label className="TextureSlotControls TextureSlotControls__select-field-1 grid min-w-0 gap-1">
+        <span className="TextureSlotControls TextureSlotControls__label-1 text-[10px] font-semibold text-muted-foreground">
+          역할
+        </span>
+        <select
+          className="TextureSlotControls TextureSlotControls__select-1 h-8 min-w-0 rounded-md border border-border bg-background px-2 text-xs font-semibold outline-none"
+          onChange={(event) =>
+            onChange(
+              withUpdatedTextureMeta(modelFile, slotIndex, {
+                role: event.target.value as Model3DTextureRole,
+              }),
+            )
           }
-        />
-      </div>
+          value={texture?.role ?? "baseColor"}
+        >
+          {TEXTURE_ROLES.map((role) => (
+            <option key={role.value} value={role.value}>
+              {role.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <RangeField
         label="텍스처 강도"
@@ -135,7 +120,7 @@ function TextureSlotControls({
           onChange(withUpdatedTextureMeta(modelFile, slotIndex, { strength }))
         }
         step={0.05}
-        value={texture?.strength ?? (slotIndex === 0 ? 1 : 0.35)}
+        value={texture?.strength ?? 1}
       />
     </div>
   );

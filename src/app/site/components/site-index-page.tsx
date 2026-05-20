@@ -165,15 +165,18 @@ export function SiteIndexPage() {
   const activeLocation = getItemAt(activeSite?.locations, activeLocationIndex);
   const isMutating = Boolean(pendingAction);
 
-  const canSaveSite = Boolean(draftSite.site_id.trim() && draftSite.name.trim());
+  const canSaveSite = Boolean(draftSite.name.trim());
   const canSaveLocation = Boolean(
-    activeSite && draftLocation.location_id.trim() && draftLocation.name.trim(),
+    activeSite?.site_id.trim() &&
+      draftLocation.name.trim() &&
+      (activeLocationIndex === undefined || activeLocation?.location_id.trim()),
   );
   const canSaveAsset = Boolean(
     activeSite &&
       activeLocation &&
-      draftAsset.asset_id.trim() &&
-      draftAsset.name.trim(),
+      activeLocation.location_id.trim() &&
+      draftAsset.name.trim() &&
+      (!editingAssetId || editingAssetId.trim()),
   );
 
   const totals = useMemo(
@@ -236,6 +239,13 @@ export function SiteIndexPage() {
     setApiMessage({ tone: "success", text });
   };
 
+  const showBackendIdError = (label: string) => {
+    setApiMessage({
+      tone: "error",
+      text: `백엔드 응답에 ${label} ID가 없습니다.`,
+    });
+  };
+
   const handleStartSite = () => {
     setIsEditorOpen(true);
     setActiveSiteIndex(undefined);
@@ -263,11 +273,6 @@ export function SiteIndexPage() {
     if (isMutating) return;
 
     const nextSite = normalizeSite(draftSite);
-    const duplicateIndex = sites.findIndex(
-      (site, index) => site.site_id === nextSite.site_id && index !== activeSiteIndex,
-    );
-    if (duplicateIndex >= 0) return;
-
     const currentSite = getItemAt(sites, activeSiteIndex);
     const response = await runMutation<ApiSiteManagementResponse>(
       "site-save",
@@ -291,6 +296,11 @@ export function SiteIndexPage() {
           locations: currentSite.locations,
         })
       : applySiteResponse(nextSite, response);
+
+    if (!savedSite.site_id.trim()) {
+      showBackendIdError("공정");
+      return;
+    }
 
     if (activeSiteIndex === undefined) {
       const nextSiteIndex = sites.length;
@@ -318,16 +328,19 @@ export function SiteIndexPage() {
 
   const handleSaveLocation = async () => {
     if (activeSiteIndex === undefined || !activeSite || isMutating) return;
+    if (!activeSite.site_id.trim()) {
+      showBackendIdError("공정");
+      return;
+    }
 
     const nextLocation = normalizeLocation(draftLocation);
     const currentLocations = sites[activeSiteIndex]?.locations ?? [];
-    const duplicateIndex = currentLocations.findIndex(
-      (loc, index) =>
-        loc.location_id === nextLocation.location_id && index !== activeLocationIndex,
-    );
-    if (duplicateIndex >= 0) return;
-
     const currentLocation = getItemAt(currentLocations, activeLocationIndex);
+    if (currentLocation && !currentLocation.location_id.trim()) {
+      showBackendIdError("위치");
+      return;
+    }
+
     const response = await runMutation<ApiSiteManagementResponse>(
       "location-save",
       "위치 저장에 실패했습니다.",
@@ -354,6 +367,11 @@ export function SiteIndexPage() {
       : applyLocationResponse(nextLocation, response);
     const nextLocationIndex =
       activeLocationIndex === undefined ? currentLocations.length : activeLocationIndex;
+
+    if (!savedLocation.location_id.trim()) {
+      showBackendIdError("위치");
+      return;
+    }
 
     setSites((prev) =>
       prev.map((site, siteIndex) => {
@@ -398,6 +416,14 @@ export function SiteIndexPage() {
     ) {
       return;
     }
+    if (!activeLocation.location_id.trim()) {
+      showBackendIdError("위치");
+      return;
+    }
+    if (editingAssetId !== undefined && !editingAssetId.trim()) {
+      showBackendIdError("설비");
+      return;
+    }
 
     const nextAsset = normalizeAsset(draftAsset);
     const response = await runMutation<ApiSiteManagementResponse>(
@@ -416,6 +442,11 @@ export function SiteIndexPage() {
     }
 
     const savedAsset = applyAssetResponse(nextAsset, response);
+
+    if (!savedAsset.asset_id.trim()) {
+      showBackendIdError("설비");
+      return;
+    }
 
     setSites((prev) =>
       prev.map((site, siteIndex) => {
@@ -913,14 +944,6 @@ export function SiteIndexPage() {
                       <p className="mt-1 text-sm text-muted-foreground">공정 기본 정보를 입력하세요.</p>
                     </div>
                     <TextField
-                      label="공정 ID (site_id)"
-                      onChange={(value) =>
-                        setDraftSite((site) => ({ ...site, site_id: toSlugValue(value) }))
-                      }
-                      placeholder="site-main-line"
-                      value={draftSite.site_id}
-                    />
-                    <TextField
                       label="공정명 (name)"
                       onChange={(value) =>
                         setDraftSite((site) => ({ ...site, name: value }))
@@ -1021,18 +1044,6 @@ export function SiteIndexPage() {
                       </div>
                     )}
 
-                    <TextField
-                      disabled={!activeSite}
-                      label="위치 ID (location_id)"
-                      onChange={(value) =>
-                        setDraftLocation((loc) => ({
-                          ...loc,
-                          location_id: toSlugValue(value),
-                        }))
-                      }
-                      placeholder="machine-room"
-                      value={draftLocation.location_id}
-                    />
                     <div className="grid gap-5 sm:grid-cols-2">
                       <TextField
                         disabled={!activeSite}
@@ -1164,16 +1175,13 @@ export function SiteIndexPage() {
                       <div className="grid gap-5 content-start">
                         <div className="grid gap-5 sm:grid-cols-2">
                           <TextField
-                            disabled={!activeLocation || Boolean(editingAssetId)}
-                            label="자산 ID (asset_id)"
+                            disabled={!activeLocation}
+                            label="설비명 (name)"
                             onChange={(value) =>
-                              setDraftAsset((eq) => ({
-                                ...eq,
-                                asset_id: toSlugValue(value),
-                              }))
+                              setDraftAsset((eq) => ({ ...eq, name: value }))
                             }
-                            placeholder="asset-compressor-01"
-                            value={draftAsset.asset_id}
+                            placeholder="압축기 1호기"
+                            value={draftAsset.name}
                           />
                           <TextField
                             disabled={!activeLocation}
@@ -1191,21 +1199,21 @@ export function SiteIndexPage() {
                         <div className="grid gap-5 sm:grid-cols-2">
                           <TextField
                             disabled={!activeLocation}
-                            label="설비명 (name)"
-                            onChange={(value) =>
-                              setDraftAsset((eq) => ({ ...eq, name: value }))
-                            }
-                            placeholder="압축기 1호기"
-                            value={draftAsset.name}
-                          />
-                          <TextField
-                            disabled={!activeLocation}
                             label="유형 (type)"
                             onChange={(value) =>
                               setDraftAsset((eq) => ({ ...eq, type: value }))
                             }
                             placeholder="회전 설비"
                             value={draftAsset.type}
+                          />
+                          <TextField
+                            disabled={!activeLocation}
+                            label="담당자 (manager)"
+                            onChange={(value) =>
+                              setDraftAsset((eq) => ({ ...eq, manager: value }))
+                            }
+                            placeholder="담당자"
+                            value={draftAsset.manager}
                           />
                         </div>
                         <TextAreaField
@@ -1217,17 +1225,6 @@ export function SiteIndexPage() {
                           placeholder="설비 설명"
                           value={draftAsset.description}
                         />
-                        <div className="grid gap-5 sm:grid-cols-2">
-                          <TextField
-                            disabled={!activeLocation}
-                            label="담당자 (manager)"
-                            onChange={(value) =>
-                              setDraftAsset((eq) => ({ ...eq, manager: value }))
-                            }
-                            placeholder="담당자"
-                            value={draftAsset.manager}
-                          />
-                        </div>
                         <ImageUploadField
                           disabled={!activeLocation}
                           label="대표 이미지"
@@ -1607,7 +1604,7 @@ function normalizeSite(site: SiteBuilderSite): SiteBuilderSite {
       ? site.locations.map(normalizeLocation)
       : [],
     name: site.name.trim(),
-    site_id: toSlugValue(site.site_id),
+    site_id: site.site_id.trim(),
   });
 }
 
@@ -1619,7 +1616,7 @@ function normalizeLocation(location: SiteBuilderLocation): SiteBuilderLocation {
       : [],
     floor: location.floor.trim(),
     imageUrl: location.imageUrl?.trim() || undefined,
-    location_id: toSlugValue(location.location_id),
+    location_id: location.location_id.trim(),
     name: location.name.trim(),
     summary: location.summary.trim(),
   };
@@ -1628,7 +1625,7 @@ function normalizeLocation(location: SiteBuilderLocation): SiteBuilderLocation {
 function normalizeAsset(asset: SiteBuilderAsset): SiteBuilderAsset {
   return {
     ...asset,
-    asset_id: toSlugValue(asset.asset_id),
+    asset_id: asset.asset_id.trim(),
     asset_code: asset.asset_code.trim(),
     description: asset.description?.trim() ?? "",
     imageUrl: asset.imageUrl?.trim() || undefined,
@@ -1727,7 +1724,11 @@ function applySiteResponse(
   fallbackSite: SiteBuilderSite,
   response: unknown,
 ): SiteBuilderSite {
-  const record = toResponseRecord(response);
+  const record = toResponseRecord(
+    response,
+    ["site", "process"],
+    ["site_id", "process_id", "id"],
+  );
   const responseLocations = readRecordArray(record, "locations");
   const locations = responseLocations
     ? responseLocations.map((location, index) =>
@@ -1756,7 +1757,11 @@ function applyLocationResponse(
   fallbackLocation: SiteBuilderLocation,
   response: unknown,
 ): SiteBuilderLocation {
-  const record = toResponseRecord(response);
+  const record = toResponseRecord(
+    response,
+    ["location"],
+    ["location_id", "id"],
+  );
   const responseAssets = readRecordArray(record, "assets");
   const assets = responseAssets
     ? responseAssets.map((asset, index) =>
@@ -1783,7 +1788,11 @@ function applyAssetResponse(
   fallbackAsset: SiteBuilderAsset,
   response: unknown,
 ): SiteBuilderAsset {
-  const record = toResponseRecord(response);
+  const record = toResponseRecord(
+    response,
+    ["asset"],
+    ["asset_id", "id"],
+  );
 
   return {
     ...fallbackAsset,
@@ -1805,10 +1814,47 @@ function applyAssetResponse(
   };
 }
 
-function toResponseRecord(value: unknown) {
+function toResponseRecord(
+  value: unknown,
+  nestedKeys: string[] = [],
+  entityKeys: string[] = [],
+) {
+  const record = toPlainRecord(value);
+  if (!record) return undefined;
+  if (hasAnyRecordKey(record, entityKeys)) return record;
+
+  const directNestedRecord = findNestedRecord(record, nestedKeys);
+  if (directNestedRecord) return directNestedRecord;
+
+  const wrappedRecord = findNestedRecord(record, ["data", "result"]);
+  if (!wrappedRecord) return record;
+
+  return findNestedRecord(wrappedRecord, nestedKeys) ?? wrappedRecord;
+}
+
+function toPlainRecord(value: unknown) {
   return typeof value === "object" && value !== null
     ? (value as Record<string, unknown>)
     : undefined;
+}
+
+function findNestedRecord(
+  record: Record<string, unknown>,
+  keys: string[],
+) {
+  for (const key of keys) {
+    const nestedRecord = toPlainRecord(record[key]);
+    if (nestedRecord) return nestedRecord;
+  }
+
+  return undefined;
+}
+
+function hasAnyRecordKey(
+  record: Record<string, unknown>,
+  keys: string[],
+) {
+  return keys.some((key) => record[key] !== undefined && record[key] !== null);
 }
 
 function readRecordArray(
@@ -1854,14 +1900,6 @@ function recalculateSiteCounts(site: SiteBuilderSite): SiteBuilderSite {
     ),
     locationCount: site.locations.length,
   };
-}
-
-function toSlugValue(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^0-9a-z가-힣]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 function getApiErrorMessage(error: unknown, fallbackMessage: string) {

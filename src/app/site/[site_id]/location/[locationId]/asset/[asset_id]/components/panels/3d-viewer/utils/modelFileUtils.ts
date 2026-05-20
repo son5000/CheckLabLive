@@ -4,14 +4,14 @@ import type {
   Model3DTextureRole,
 } from "@/app/layouts/types";
 
-const DEFAULT_TEXTURE_ROLES: Model3DTextureRole[] = ["baseColor", "emissive"];
+const DEFAULT_TEXTURE_ROLES: Model3DTextureRole[] = ["baseColor"];
 
 export function normalizeModelTextures(
   modelFile: Model3DFile,
 ): Model3DTextureFile[] {
   if (modelFile.textures?.length) {
     return modelFile.textures.map((texture, index) => ({
-      enabled: index === 0 ? true : texture.enabled ?? true,
+      enabled: texture.enabled ?? true,
       id: texture.id || `texture-${index + 1}`,
       label: texture.label ?? `텍스처 ${index + 1}`,
       role: texture.role ?? DEFAULT_TEXTURE_ROLES[index] ?? "baseColor",
@@ -80,7 +80,22 @@ export function withUpdatedTextureMeta(
   const texture = textures[slotIndex];
 
   if (!texture) {
-    return modelFile;
+    const role = patch.role ?? DEFAULT_TEXTURE_ROLES[slotIndex] ?? "baseColor";
+
+    return {
+      ...modelFile,
+      textures: [
+        ...textures,
+        {
+          enabled: true,
+          id: `texture-${slotIndex + 1}`,
+          label: `텍스처 ${slotIndex + 1}`,
+          role,
+          source: "",
+          strength: patch.strength ?? (slotIndex === 0 ? 1 : 0.35),
+        },
+      ],
+    };
   }
 
   return {

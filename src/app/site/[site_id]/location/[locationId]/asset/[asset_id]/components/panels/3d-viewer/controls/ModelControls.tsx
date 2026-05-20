@@ -90,9 +90,11 @@ export function ModelControls({
           onChange={(wireframe) => onChange({ ...config, wireframe })}
         />
         <ToggleField
-          checked={config.castShadow ?? true}
+          checked={config.castShadow ?? false}
           label="그림자"
-          onChange={(castShadow) => onChange({ ...config, castShadow })}
+          onChange={(castShadow) =>
+            onChange({ ...config, castShadow, receiveShadow: castShadow })
+          }
         />
       </div>
     </ControlSection>

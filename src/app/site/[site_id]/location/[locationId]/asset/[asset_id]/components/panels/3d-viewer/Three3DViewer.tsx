@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import type { PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import * as THREE from "three";
 
-import type { Model3DFile, Viewer3DConfig } from "@/app/layouts/types";
+import type { Model3DFile, Vector3, Viewer3DConfig } from "@/app/layouts/types";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_MODEL_3D_FILE,
@@ -16,38 +18,93 @@ import { useThreeCamera } from "./hooks/useThreeCamera";
 import { useThreeLighting } from "./hooks/useThreeLighting";
 import { useThreeModel } from "./hooks/useThreeModel";
 import { useThreeScene } from "./hooks/useThreeScene";
+import type {
+  Viewer3DAnalysisDraft,
+  Viewer3DAnalysisMode,
+  Viewer3DAnalysisSummary,
+  Viewer3DAnalysisTarget,
+} from "./types";
 
 type Three3DViewerProps = {
+  activeAnalysisMode?: Viewer3DAnalysisMode;
   allowOptionBar?: boolean;
+  analysisSummary?: Viewer3DAnalysisSummary;
+  analysisTargets?: Viewer3DAnalysisTarget[];
   className?: string;
   config?: Viewer3DConfig;
   initialConfig?: Viewer3DConfig;
   modelFile?: Model3DFile;
+  onAnalysisTargetCreate?: (target: Viewer3DAnalysisDraft) => void;
+  onAnalysisTargetSelect?: (targetId: string) => void;
   onConfigChange?: (config: Viewer3DConfig) => void;
   onModelFileChange?: (modelFile: Model3DFile) => void;
+  selectedAnalysisTargetId?: string;
 };
 
+type ClientPoint = {
+  x: number;
+  y: number;
+};
+
+type AnalysisPointerState = {
+  currentClient: ClientPoint;
+  mode: Viewer3DAnalysisMode;
+  pointerId: number;
+  startClient: ClientPoint;
+  startHit?: THREE.Vector3;
+};
+
+type PercentRect = {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+};
+
+type ProjectedAnalysisTarget = {
+  id: string;
+  left: number;
+  rect?: PercentRect;
+  top: number;
+  visible: boolean;
+};
+
+const EMPTY_ANALYSIS_TARGETS: Viewer3DAnalysisTarget[] = [];
+
 export function Three3DViewer({
+  activeAnalysisMode,
   allowOptionBar = true,
+  analysisSummary,
+  analysisTargets = EMPTY_ANALYSIS_TARGETS,
   className,
   config,
   initialConfig = DEFAULT_VIEWER_3D_CONFIG,
   modelFile,
+  onAnalysisTargetCreate,
+  onAnalysisTargetSelect,
   onConfigChange,
   onModelFileChange,
+  selectedAnalysisTargetId,
 }: Three3DViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const projectedTargetsKeyRef = useRef("");
+  const raycasterRef = useRef(new THREE.Raycaster());
   const [internalConfig, setInternalConfig] =
     useState<Viewer3DConfig>(initialConfig);
   const [internalModelFile, setInternalModelFile] =
     useState<Model3DFile>(modelFile ?? DEFAULT_MODEL_3D_FILE);
+  const [analysisPointerState, setAnalysisPointerState] =
+    useState<AnalysisPointerState>();
+  const [projectedTargets, setProjectedTargets] = useState<
+    ProjectedAnalysisTarget[]
+  >([]);
   const resolvedConfig = config ?? internalConfig;
   const resolvedModelFile = modelFile ?? internalModelFile;
-  const { cameraRef, controlsRef, sceneRef } = useThreeScene(
+  const { cameraRef, controlsRef, rendererRef, sceneRef } = useThreeScene(
     containerRef,
     resolvedConfig,
   );
-  const { loadState } = useThreeModel(
+  const { loadState, modelRef } = useThreeModel(
     sceneRef,
     resolvedModelFile,
     resolvedConfig.model,
@@ -90,6 +147,164 @@ export function Three3DViewer({
 
   const showOptionBar =
     allowOptionBar && (resolvedConfig.controls?.showOptionBar ?? true);
+  const canCreateAnalysisTarget = Boolean(
+    activeAnalysisMode &&
+      onAnalysisTargetCreate &&
+      !loadState.isLoading &&
+      !loadState.error,
+  );
+  const selectedProjectedTarget = selectedAnalysisTargetId
+    ? projectedTargets.find((target) => target.id === selectedAnalysisTargetId)
+    : undefined;
+  const analysisDragRect = useMemo(
+    () =>
+      analysisPointerState?.mode === "area"
+        ? getAnalysisDragRect(
+            analysisPointerState,
+            rendererRef.current?.domElement.getBoundingClientRect(),
+          )
+        : undefined,
+    [analysisPointerState, rendererRef],
+  );
+
+  useEffect(() => {
+    if (!analysisTargets.length) {
+      if (projectedTargetsKeyRef.current) {
+        projectedTargetsKeyRef.current = "";
+        setProjectedTargets([]);
+      }
+
+      return;
+    }
+
+    let animationFrameId = 0;
+
+    const projectTargets = () => {
+      const camera = cameraRef.current;
+      const renderer = rendererRef.current;
+
+      if (!camera || !renderer) {
+        animationFrameId = window.requestAnimationFrame(projectTargets);
+        return;
+      }
+
+      const nextTargets = analysisTargets.map((target) =>
+        projectAnalysisTarget(target, camera),
+      );
+      const nextKey = getProjectedTargetsKey(nextTargets);
+
+      if (projectedTargetsKeyRef.current !== nextKey) {
+        projectedTargetsKeyRef.current = nextKey;
+        setProjectedTargets(nextTargets);
+      }
+
+      animationFrameId = window.requestAnimationFrame(projectTargets);
+    };
+
+    projectTargets();
+
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [analysisTargets, cameraRef, rendererRef]);
+
+  const getWorldHit = (clientPoint: ClientPoint) => {
+    const camera = cameraRef.current;
+    const model = modelRef.current;
+    const renderer = rendererRef.current;
+
+    if (!camera || !model || !renderer) {
+      return undefined;
+    }
+
+    return getWorldHitFromClientPoint({
+      camera,
+      clientPoint,
+      model,
+      raycaster: raycasterRef.current,
+      renderer,
+    });
+  };
+
+  const restoreControls = () => {
+    if (controlsRef.current) {
+      controlsRef.current.enabled = true;
+    }
+  };
+
+  const handleAnalysisPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!canCreateAnalysisTarget || !activeAnalysisMode) {
+      return;
+    }
+
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    if (controlsRef.current) {
+      controlsRef.current.enabled = false;
+    }
+
+    const clientPoint = { x: event.clientX, y: event.clientY };
+
+    setAnalysisPointerState({
+      currentClient: clientPoint,
+      mode: activeAnalysisMode,
+      pointerId: event.pointerId,
+      startClient: clientPoint,
+      startHit: getWorldHit(clientPoint),
+    });
+  };
+
+  const handleAnalysisPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (!analysisPointerState || event.pointerId !== analysisPointerState.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    setAnalysisPointerState({
+      ...analysisPointerState,
+      currentClient: { x: event.clientX, y: event.clientY },
+    });
+  };
+
+  const handleAnalysisPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (!analysisPointerState || event.pointerId !== analysisPointerState.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    const draft = buildAnalysisDraft(
+      analysisPointerState,
+      { x: event.clientX, y: event.clientY },
+      getWorldHit,
+    );
+
+    restoreControls();
+    setAnalysisPointerState(undefined);
+
+    if (draft) {
+      onAnalysisTargetCreate?.(draft);
+    }
+  };
+
+  const handleAnalysisPointerCancel = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    restoreControls();
+    setAnalysisPointerState(undefined);
+  };
 
   return (
     <div
@@ -109,7 +324,8 @@ export function Three3DViewer({
       <div
         className={cn(
           "Three3DViewer Three3DViewer__body-1 grid min-h-0 min-w-0 flex-1 grid-cols-1",
-          showOptionBar && "md:grid-cols-[minmax(0,1fr)_18rem]",
+          showOptionBar &&
+            "grid-rows-[minmax(10rem,1fr)_minmax(0,16rem)] md:grid-cols-[minmax(0,1fr)_18rem] md:grid-rows-[minmax(0,1fr)]",
         )}
       >
         <div className="Three3DViewer Three3DViewer__stage-1 relative min-h-0 min-w-0 overflow-hidden bg-neutral-950 md:min-h-[14rem]">
@@ -117,6 +333,39 @@ export function Three3DViewer({
             ref={containerRef}
             className="Three3DViewer Three3DViewer__canvas-host-1 h-full min-h-0 w-full"
           />
+          <AnalysisOverlay
+            analysisSummary={analysisSummary}
+            analysisTargets={analysisTargets}
+            projectedTargets={projectedTargets}
+            selectedProjectedTarget={selectedProjectedTarget}
+            selectedTargetId={selectedAnalysisTargetId}
+            onSelect={onAnalysisTargetSelect}
+          />
+          {canCreateAnalysisTarget ? (
+            <div
+              className={cn(
+                "Three3DViewer Three3DViewer__analysis-capture-1 absolute inset-0 z-20 touch-none",
+                activeAnalysisMode === "point" && "cursor-crosshair",
+                activeAnalysisMode === "area" && "cursor-crosshair",
+              )}
+              onPointerCancel={handleAnalysisPointerCancel}
+              onPointerDown={handleAnalysisPointerDown}
+              onPointerMove={handleAnalysisPointerMove}
+              onPointerUp={handleAnalysisPointerUp}
+            >
+              {analysisDragRect ? (
+                <div
+                  className="Three3DViewer Three3DViewer__analysis-drag-1 pointer-events-none absolute rounded-sm border border-cyan-200 bg-cyan-300/15 shadow-[0_0_18px_rgba(103,232,249,0.26)]"
+                  style={{
+                    height: `${analysisDragRect.height}%`,
+                    left: `${analysisDragRect.left}%`,
+                    top: `${analysisDragRect.top}%`,
+                    width: `${analysisDragRect.width}%`,
+                  }}
+                />
+              ) : null}
+            </div>
+          ) : null}
           {loadState.isLoading || loadState.error ? (
             <ViewerLoadState
               error={loadState.error}
@@ -134,6 +383,161 @@ export function Three3DViewer({
           />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function AnalysisOverlay({
+  analysisSummary,
+  analysisTargets,
+  onSelect,
+  projectedTargets,
+  selectedProjectedTarget,
+  selectedTargetId,
+}: {
+  analysisSummary?: Viewer3DAnalysisSummary;
+  analysisTargets: Viewer3DAnalysisTarget[];
+  onSelect?: (targetId: string) => void;
+  projectedTargets: ProjectedAnalysisTarget[];
+  selectedProjectedTarget?: ProjectedAnalysisTarget;
+  selectedTargetId?: string;
+}) {
+  const projectedTargetById = useMemo(
+    () => new Map(projectedTargets.map((target) => [target.id, target])),
+    [projectedTargets],
+  );
+  const connectorPoints =
+    selectedProjectedTarget?.visible && analysisSummary
+      ? getCalloutConnectorPoints(selectedProjectedTarget)
+      : undefined;
+
+  if (!analysisTargets.length && !analysisSummary) {
+    return null;
+  }
+
+  return (
+    <div className="AnalysisOverlay AnalysisOverlay__root-1 pointer-events-none absolute inset-0 z-30">
+      <svg
+        className="AnalysisOverlay AnalysisOverlay__lines-1 absolute inset-0 h-full w-full"
+        preserveAspectRatio="none"
+        viewBox="0 0 100 100"
+      >
+        {connectorPoints ? (
+          <polyline
+            fill="none"
+            points={connectorPoints}
+            stroke="rgba(125, 211, 252, 0.88)"
+            strokeDasharray="1.8 1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="0.42"
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
+      </svg>
+
+      {analysisTargets.map((target, index) => {
+        const projectedTarget = projectedTargetById.get(target.id);
+
+        if (!projectedTarget?.visible) {
+          return null;
+        }
+
+        const selected = target.id === selectedTargetId;
+
+        if (target.kind === "area" && projectedTarget.rect) {
+          return (
+            <button
+              key={target.id}
+              type="button"
+              className={cn(
+                "AnalysisOverlay AnalysisOverlay__area-1 pointer-events-auto absolute overflow-hidden rounded-sm border bg-cyan-300/[0.12] text-left shadow-[0_0_18px_rgba(103,232,249,0.2)] transition hover:bg-cyan-300/20",
+                selected
+                  ? "border-lime-200 bg-lime-300/20 shadow-[0_0_24px_rgba(190,242,100,0.36)]"
+                  : "border-cyan-200/80",
+              )}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect?.(target.id);
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+              style={{
+                height: `${projectedTarget.rect.height}%`,
+                left: `${projectedTarget.rect.left}%`,
+                minHeight: "2rem",
+                minWidth: "2.75rem",
+                top: `${projectedTarget.rect.top}%`,
+                width: `${projectedTarget.rect.width}%`,
+              }}
+              title={target.name}
+            >
+              <span className="AnalysisOverlay AnalysisOverlay__area-label-1 absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded-sm bg-black/55 px-1 py-0.5 text-[10px] font-semibold text-white">
+                {index + 1}. {target.name}
+              </span>
+            </button>
+          );
+        }
+
+        return (
+          <button
+            key={target.id}
+            type="button"
+            className={cn(
+              "AnalysisOverlay AnalysisOverlay__point-1 pointer-events-auto absolute grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[10px] font-bold shadow-[0_0_18px_rgba(103,232,249,0.26)] transition hover:scale-105",
+              selected
+                ? "border-lime-200 bg-lime-300 text-neutral-950"
+                : "border-cyan-200 bg-cyan-300 text-neutral-950",
+            )}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect?.(target.id);
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            style={{
+              left: `${projectedTarget.left}%`,
+              top: `${projectedTarget.top}%`,
+            }}
+            title={target.name}
+          >
+            {index + 1}
+          </button>
+        );
+      })}
+
+      {selectedProjectedTarget?.visible && analysisSummary ? (
+        <div className="AnalysisOverlay AnalysisOverlay__callout-1 absolute right-3 top-3 z-40 grid w-[min(19rem,calc(100%-1.5rem))] gap-2 rounded-md border border-cyan-200/35 bg-neutral-950/[0.78] p-3 text-white shadow-2xl backdrop-blur-md">
+          <div className="AnalysisOverlay AnalysisOverlay__callout-header-1 min-w-0">
+            <p className="AnalysisOverlay AnalysisOverlay__callout-title-1 truncate text-xs font-semibold">
+              {analysisSummary.title}
+            </p>
+            <p className="AnalysisOverlay AnalysisOverlay__callout-subtitle-1 truncate font-mono text-[10px] text-cyan-100/80">
+              {analysisSummary.subtitle}
+            </p>
+          </div>
+
+          <div className="AnalysisOverlay AnalysisOverlay__metric-grid-1 grid grid-cols-3 gap-1.5">
+            <AnalysisMetric label="최고" value={`${analysisSummary.temperatureMax}℃`} />
+            <AnalysisMetric label="평균" value={`${analysisSummary.temperatureAverage}℃`} />
+            <AnalysisMetric label="최저" value={`${analysisSummary.temperatureMin}℃`} />
+            <AnalysisMetric label="검출" value={`${analysisSummary.ultrasoundDetectedDb} dB`} />
+            <AnalysisMetric label="Peak" value={`${analysisSummary.ultrasoundPeakDb} dB`} />
+            <AnalysisMetric label="추이" value={analysisSummary.trendLabel} />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AnalysisMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="AnalysisMetric AnalysisMetric__tile-1 min-w-0 rounded-sm border border-white/10 bg-white/[0.08] px-1.5 py-1">
+      <p className="AnalysisMetric AnalysisMetric__label-1 truncate text-[9px] font-semibold text-cyan-100/75">
+        {label}
+      </p>
+      <p className="AnalysisMetric AnalysisMetric__value-1 truncate font-mono text-[11px] font-semibold text-white">
+        {value}
+      </p>
     </div>
   );
 }
@@ -165,4 +569,223 @@ function ViewerLoadState({
       </div>
     </div>
   );
+}
+
+function getWorldHitFromClientPoint({
+  camera,
+  clientPoint,
+  model,
+  raycaster,
+  renderer,
+}: {
+  camera: THREE.PerspectiveCamera;
+  clientPoint: ClientPoint;
+  model: THREE.Group;
+  raycaster: THREE.Raycaster;
+  renderer: THREE.WebGLRenderer;
+}) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const pointer = new THREE.Vector2(
+    ((clientPoint.x - rect.left) / rect.width) * 2 - 1,
+    -(((clientPoint.y - rect.top) / rect.height) * 2 - 1),
+  );
+
+  raycaster.setFromCamera(pointer, camera);
+
+  return raycaster.intersectObject(model, true).at(0)?.point.clone();
+}
+
+function buildAnalysisDraft(
+  state: AnalysisPointerState,
+  endClient: ClientPoint,
+  getWorldHit: (clientPoint: ClientPoint) => THREE.Vector3 | undefined,
+): Viewer3DAnalysisDraft | undefined {
+  const travelDistance = getClientDistance(state.startClient, endClient);
+  const endHit = getWorldHit(endClient) ?? state.startHit;
+
+  if (!endHit) {
+    return undefined;
+  }
+
+  if (state.mode === "point") {
+    return {
+      kind: "point",
+      worldPosition: toVector3(endHit),
+    };
+  }
+
+  if (travelDistance < 18) {
+    return undefined;
+  }
+
+  const startHit = state.startHit ?? getWorldHit(state.startClient);
+  const centerClient = {
+    x: (state.startClient.x + endClient.x) / 2,
+    y: (state.startClient.y + endClient.y) / 2,
+  };
+  const centerHit = getWorldHit(centerClient) ?? endHit;
+
+  return {
+    kind: "area",
+    worldArea: startHit
+      ? {
+          end: toVector3(endHit),
+          start: toVector3(startHit),
+        }
+      : undefined,
+    worldPosition: toVector3(centerHit),
+  };
+}
+
+function getAnalysisDragRect(
+  state: AnalysisPointerState,
+  bounds?: DOMRect,
+): PercentRect | undefined {
+  if (!bounds) {
+    return undefined;
+  }
+
+  const start = clientToPercentPoint(state.startClient, bounds);
+  const current = clientToPercentPoint(state.currentClient, bounds);
+  const left = Math.min(start.x, current.x);
+  const top = Math.min(start.y, current.y);
+
+  return {
+    height: Math.abs(current.y - start.y),
+    left,
+    top,
+    width: Math.abs(current.x - start.x),
+  };
+}
+
+function projectAnalysisTarget(
+  target: Viewer3DAnalysisTarget,
+  camera: THREE.PerspectiveCamera,
+): ProjectedAnalysisTarget {
+  const center = projectVector(target.worldPosition, camera);
+  const rect =
+    target.kind === "area" ? projectAnalysisArea(target, camera, center) : undefined;
+
+  return {
+    id: target.id,
+    left: center.left,
+    rect,
+    top: center.top,
+    visible: center.visible,
+  };
+}
+
+function projectAnalysisArea(
+  target: Viewer3DAnalysisTarget,
+  camera: THREE.PerspectiveCamera,
+  center: ProjectedAnalysisTarget,
+): PercentRect | undefined {
+  if (!center.visible) {
+    return undefined;
+  }
+
+  if (!target.worldArea) {
+    return getCenteredRect(center, 10, 10);
+  }
+
+  const start = projectVector(target.worldArea.start, camera);
+  const end = projectVector(target.worldArea.end, camera);
+  const visiblePoints = [start, end, center].filter((point) => point.visible);
+
+  if (!visiblePoints.length) {
+    return getCenteredRect(center, 10, 10);
+  }
+
+  const minLeft = Math.min(...visiblePoints.map((point) => point.left));
+  const maxLeft = Math.max(...visiblePoints.map((point) => point.left));
+  const minTop = Math.min(...visiblePoints.map((point) => point.top));
+  const maxTop = Math.max(...visiblePoints.map((point) => point.top));
+  const width = Math.min(42, Math.max(7, maxLeft - minLeft));
+  const height = Math.min(42, Math.max(7, maxTop - minTop));
+
+  return {
+    height,
+    left: clamp(minLeft, 0, 100 - width),
+    top: clamp(minTop, 0, 100 - height),
+    width,
+  };
+}
+
+function projectVector(
+  vector: Vector3,
+  camera: THREE.PerspectiveCamera,
+): ProjectedAnalysisTarget {
+  const projected = new THREE.Vector3(vector.x, vector.y, vector.z).project(camera);
+
+  return {
+    id: "",
+    left: clamp((projected.x + 1) * 50, 0, 100),
+    top: clamp((1 - projected.y) * 50, 0, 100),
+    visible: projected.z >= -1 && projected.z <= 1,
+  };
+}
+
+function getCenteredRect(
+  center: ProjectedAnalysisTarget,
+  width: number,
+  height: number,
+): PercentRect {
+  return {
+    height,
+    left: clamp(center.left - width / 2, 0, 100 - width),
+    top: clamp(center.top - height / 2, 0, 100 - height),
+    width,
+  };
+}
+
+function getCalloutConnectorPoints(target: ProjectedAnalysisTarget) {
+  const elbowX = target.left > 72 ? 69 : 72;
+  const calloutX = 73;
+  const calloutY = 15;
+
+  return `${target.left},${target.top} ${elbowX},${target.top} ${calloutX},${calloutY}`;
+}
+
+function getProjectedTargetsKey(targets: ProjectedAnalysisTarget[]) {
+  return targets
+    .map((target) =>
+      [
+        target.id,
+        target.visible ? 1 : 0,
+        target.left.toFixed(1),
+        target.top.toFixed(1),
+        target.rect?.left.toFixed(1) ?? "",
+        target.rect?.top.toFixed(1) ?? "",
+        target.rect?.width.toFixed(1) ?? "",
+        target.rect?.height.toFixed(1) ?? "",
+      ].join(":"),
+    )
+    .join("|");
+}
+
+function clientToPercentPoint(point: ClientPoint, bounds: DOMRect) {
+  return {
+    x: clamp(((point.x - bounds.left) / bounds.width) * 100, 0, 100),
+    y: clamp(((point.y - bounds.top) / bounds.height) * 100, 0, 100),
+  };
+}
+
+function getClientDistance(firstPoint: ClientPoint, secondPoint: ClientPoint) {
+  return Math.hypot(firstPoint.x - secondPoint.x, firstPoint.y - secondPoint.y);
+}
+
+function toVector3(vector: THREE.Vector3): Vector3 {
+  return {
+    x: round(vector.x),
+    y: round(vector.y),
+    z: round(vector.z),
+  };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function round(value: number) {
+  return Number(value.toFixed(3));
 }

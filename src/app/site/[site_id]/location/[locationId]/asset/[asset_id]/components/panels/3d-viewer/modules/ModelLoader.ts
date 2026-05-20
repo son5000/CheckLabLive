@@ -42,7 +42,10 @@ export class ModelLoader {
 
     await Promise.all(
       textures
-        .filter((textureConfig) => textureConfig.enabled !== false)
+        .filter(
+          (textureConfig) =>
+            textureConfig.enabled !== false && Boolean(textureConfig.source),
+        )
         .map(async (textureConfig) => {
           const texture = await loadTextureSource(textureConfig.source);
 

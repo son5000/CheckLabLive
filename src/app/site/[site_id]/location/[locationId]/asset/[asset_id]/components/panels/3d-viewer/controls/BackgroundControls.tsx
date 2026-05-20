@@ -10,13 +10,6 @@ import {
   ToggleField,
 } from "./control-fields";
 
-const DEFAULT_FOG = {
-  color: "#111827",
-  enabled: true,
-  far: 520,
-  near: 180,
-};
-
 export function BackgroundControls({
   config,
   onChange,
@@ -24,8 +17,6 @@ export function BackgroundControls({
   config: Background3DConfig;
   onChange: (config: Background3DConfig) => void;
 }) {
-  const fog = config.fog ?? DEFAULT_FOG;
-
   return (
     <ControlSection icon={Grid3X3} title="월드">
       <ColorField
@@ -46,7 +37,7 @@ export function BackgroundControls({
           onChange={(showAxes) => onChange({ ...config, showAxes })}
         />
         <ToggleField
-          checked={config.showGround ?? true}
+          checked={config.showGround ?? false}
           label="바닥"
           onChange={(showGround) => onChange({ ...config, showGround })}
         />
@@ -73,7 +64,7 @@ export function BackgroundControls({
             value={config.gridDivisions ?? 24}
           />
           <ColorField
-            label="그리드 색"
+            label="그리드색"
             onChange={(gridColor) => onChange({ ...config, gridColor })}
             value={config.gridColor ?? "#475569"}
           />
@@ -86,38 +77,6 @@ export function BackgroundControls({
           onChange={(groundColor) => onChange({ ...config, groundColor })}
           value={config.groundColor ?? "#0f172a"}
         />
-      ) : null}
-
-      <ToggleField
-        checked={fog.enabled}
-        label="안개"
-        onChange={(enabled) => onChange({ ...config, fog: { ...fog, enabled } })}
-      />
-
-      {fog.enabled ? (
-        <div className="BackgroundControls BackgroundControls__fog-1 grid gap-1">
-          <ColorField
-            label="안개색"
-            onChange={(color) => onChange({ ...config, fog: { ...fog, color } })}
-            value={fog.color}
-          />
-          <RangeField
-            label="시작"
-            max={800}
-            min={0}
-            onChange={(near) => onChange({ ...config, fog: { ...fog, near } })}
-            step={10}
-            value={fog.near}
-          />
-          <RangeField
-            label="끝"
-            max={1600}
-            min={60}
-            onChange={(far) => onChange({ ...config, fog: { ...fog, far } })}
-            step={10}
-            value={fog.far}
-          />
-        </div>
       ) : null}
     </ControlSection>
   );

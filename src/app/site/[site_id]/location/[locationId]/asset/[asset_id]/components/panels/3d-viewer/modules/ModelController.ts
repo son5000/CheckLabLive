@@ -10,8 +10,8 @@ export class ModelController {
         return;
       }
 
-      object.castShadow = config.castShadow ?? true;
-      object.receiveShadow = config.receiveShadow ?? true;
+      object.castShadow = config.castShadow ?? false;
+      object.receiveShadow = config.receiveShadow ?? false;
 
       if (Array.isArray(object.material)) {
         object.material.forEach((material) =>

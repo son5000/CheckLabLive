@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Bell, Moon, Settings, Sun, UserCircle } from "lucide-react";
 
 import { HeaderIconButton } from "./header-icon-button";
@@ -55,9 +56,11 @@ export function HeaderActions({
         </span>
       </button>
 
-      <HeaderIconButton label="설정">
-        <Settings className="HeaderActions HeaderActions__icon-4 h-4 w-4" aria-hidden="true" />
-      </HeaderIconButton>
+      <Link href="/settings">
+        <HeaderIconButton label="설정">
+          <Settings className="HeaderActions HeaderActions__icon-4 h-4 w-4" aria-hidden="true" />
+        </HeaderIconButton>
+      </Link>
 
       <button
         type="button"

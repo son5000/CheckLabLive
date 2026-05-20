@@ -28,7 +28,7 @@ export function Viewer3DOptionBar({
   const controls = config.controls ?? {};
 
   return (
-    <aside className="Viewer3DOptionBar Viewer3DOptionBar__aside-1 min-h-0 min-w-0 overflow-y-auto border-l border-border bg-card/95 p-2">
+    <aside className="Viewer3DOptionBar Viewer3DOptionBar__aside-1 min-h-0 min-w-0 overflow-y-auto border-t border-border bg-card/95 p-2 md:border-l md:border-t-0">
       <div className="Viewer3DOptionBar Viewer3DOptionBar__stack-1 grid gap-2">
         {controls.enableFileInputs !== false ? (
           <ModelFileControls

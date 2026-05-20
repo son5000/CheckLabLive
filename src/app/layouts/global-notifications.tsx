@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import type { DashboardNotification } from "./types";
 import { NotificationCard } from "./notifications/notification-card";
+import { useNotificationSettings } from "./hooks/use-notification-settings";
 
 /**
  * 역할
@@ -68,6 +69,12 @@ export function GlobalNotifications({
   onNavigateToDashboard,
   onOpen,
 }: GlobalNotificationsProps) {
+  const { settings } = useNotificationSettings();
+
+  if (!settings.enabled) {
+    return null;
+  }
+
   const visibleNotifications = notifications.slice(
     0,
     GLOBAL_NOTIFICATION_STACK_LIMIT,
@@ -125,9 +132,15 @@ export function GlobalNotifications({
     return null;
   }
 
+  const positionClasses = {
+    center: "inset-0 grid place-items-center px-3 py-6",
+    "bottom-right": "bottom-4 right-4 w-96 max-w-[calc(100%-2rem)]",
+    "bottom-right-small": "bottom-4 right-4 w-80 max-w-[calc(100%-2rem)]",
+  }[settings.position];
+
   return (
     <div
-      className="GlobalNotifications GlobalNotifications__container-1 pointer-events-none fixed inset-0 z-50 grid place-items-center px-3 py-6"
+      className={`GlobalNotifications GlobalNotifications__container-1 pointer-events-none fixed z-50 ${positionClasses}`}
       aria-live="polite"
       aria-label="중앙 글로벌 경고 알림"
     >

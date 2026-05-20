@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 import type {
   AssetPartConfig,
+  AssetPartStatus,
   DetectionPointConfig,
   DetectionRoiConfig,
   DetectionSelectionMode,
@@ -26,13 +27,19 @@ import type {
   AssetThresholdConfig,
   Model3DFile,
   Model3DViewType,
+  TrendPoint,
   Viewer3DConfig,
 } from "@/app/layouts/types";
 import {
   DEFAULT_MODEL_3D_FILE,
   DEFAULT_VIEWER_3D_CONFIG,
   Three3DViewer,
+  type Viewer3DAnalysisDraft,
+  type Viewer3DAnalysisMode,
+  type Viewer3DAnalysisSummary,
+  type Viewer3DAnalysisTarget,
 } from "./3d-viewer";
+import { ControlSection } from "./3d-viewer/controls/control-fields";
 import {
   getModelSourceName,
   normalizeModelTextures,
@@ -62,6 +69,7 @@ type AssetCameraPanelProps = {
   cameraFeeds?: AssetCameraFeed[];
   defaultAssetThresholds: AssetThresholdConfig;
   assetParts: AssetPartConfig[];
+  assetPartStates?: AssetPartStatus[];
   assetThresholds: AssetThresholdConfig | null;
   isAddingAssetPart: boolean;
   selectedAssetPartId?: string;
@@ -73,6 +81,8 @@ type AssetCameraPanelProps = {
   initialViewMode?: Model3DViewType;
   onViewer3DConfigChange?: (config: Viewer3DConfig) => void;
   onViewer3DModelFileChange?: (modelFile: Model3DFile) => void;
+  temperatureData?: TrendPoint[];
+  ultrasonicData?: TrendPoint[];
   variant?: "full" | "stream";
   viewer3DConfig?: Viewer3DConfig;
   viewer3DModelFile?: Model3DFile;
@@ -81,6 +91,11 @@ type AssetCameraPanelProps = {
 type PercentPoint = {
   x: number;
   y: number;
+};
+
+type Viewer3DAnalysisPanelItem = {
+  summary: Viewer3DAnalysisSummary;
+  target: Viewer3DAnalysisTarget;
 };
 
 type RoiDragInteraction =
@@ -119,6 +134,13 @@ type DragInteraction = RoiDragInteraction | PointDragInteraction;
 
 const POINT_HIT_RADIUS = 2.6;
 const EMPTY_VIEWER_3D_MODEL_LABEL = "사용자 PLY 모델";
+const VIEWER_3D_ANALYSIS_COLORS = [
+  "#67e8f9",
+  "#bef264",
+  "#fbbf24",
+  "#f0abfc",
+  "#a5b4fc",
+];
 
 const defaultCameraFeeds: AssetCameraFeed[] = [
   {
@@ -136,6 +158,7 @@ export function AssetCameraPanel({
   cameraFeeds = defaultCameraFeeds,
   defaultAssetThresholds,
   assetParts,
+  assetPartStates = [],
   assetThresholds,
   isAddingAssetPart,
   selectedAssetPartId,
@@ -147,6 +170,8 @@ export function AssetCameraPanel({
   initialViewMode = "camera",
   onViewer3DConfigChange,
   onViewer3DModelFileChange,
+  temperatureData = [],
+  ultrasonicData = [],
   viewer3DConfig,
   viewer3DModelFile,
 }: AssetCameraPanelProps) {
@@ -178,6 +203,15 @@ export function AssetCameraPanel({
     useState<Viewer3DConfig>(viewer3DConfig ?? DEFAULT_VIEWER_3D_CONFIG);
   const [currentViewer3DModelFile, setCurrentViewer3DModelFile] =
     useState<Model3DFile | null>(viewer3DModelFile ?? null);
+  const [viewer3DAnalysisMode, setViewer3DAnalysisMode] =
+    useState<Viewer3DAnalysisMode>();
+  const [viewer3DAnalysisTargets, setViewer3DAnalysisTargets] = useState<
+    Viewer3DAnalysisTarget[]
+  >([]);
+  const [
+    selectedViewer3DAnalysisTargetId,
+    setSelectedViewer3DAnalysisTargetId,
+  ] = useState<string>();
   const canSave =
     draftName.trim().length > 0 &&
     (selectionMode === "area"
@@ -191,6 +225,34 @@ export function AssetCameraPanel({
   )
     ? currentViewer3DModelFile
     : null;
+  const viewer3DAnalysisItems = useMemo<Viewer3DAnalysisPanelItem[]>(
+    () =>
+      viewer3DAnalysisTargets.map((target, index) => ({
+        summary: buildViewer3DAnalysisSummary({
+          assetParts,
+          assetPartStates,
+          defaultThresholds: activeAssetThresholds,
+          index,
+          target,
+          temperatureData,
+          ultrasonicData,
+        }),
+        target,
+      })),
+    [
+      activeAssetThresholds,
+      assetPartStates,
+      assetParts,
+      temperatureData,
+      ultrasonicData,
+      viewer3DAnalysisTargets,
+    ],
+  );
+  const selectedViewer3DAnalysisItem = selectedViewer3DAnalysisTargetId
+    ? viewer3DAnalysisItems.find(
+        (item) => item.target.id === selectedViewer3DAnalysisTargetId,
+      )
+    : undefined;
 
   useEffect(() => {
     setCanRenderPreviewPortal(true);
@@ -230,6 +292,7 @@ export function AssetCameraPanel({
 
   useEffect(() => {
     if (!isPreviewOpen) {
+      setViewer3DAnalysisMode(undefined);
       return;
     }
 
@@ -501,6 +564,67 @@ export function AssetCameraPanel({
     });
   };
 
+  const handleViewer3DAnalysisModeChange = (
+    mode: Viewer3DAnalysisMode,
+  ) => {
+    setViewer3DAnalysisMode((currentMode) =>
+      currentMode === mode ? undefined : mode,
+    );
+  };
+
+  const handleViewer3DAnalysisTargetCreate = (
+    draft: Viewer3DAnalysisDraft,
+  ) => {
+    const nextIndex = viewer3DAnalysisTargets.length;
+    const nextTarget: Viewer3DAnalysisTarget = {
+      ...draft,
+      color:
+        VIEWER_3D_ANALYSIS_COLORS[
+          nextIndex % VIEWER_3D_ANALYSIS_COLORS.length
+        ],
+      createdAt: new Date().toISOString(),
+      id: `viewer-3d-analysis-${Date.now()}`,
+      linkedAlarm: true,
+      name:
+        draft.kind === "area"
+          ? `3D 영역 ${nextIndex + 1}`
+          : `3D 포인트 ${nextIndex + 1}`,
+      sensitivity: 75,
+      thresholds: { ...activeAssetThresholds },
+    };
+
+    setViewer3DAnalysisTargets((currentTargets) => [
+      ...currentTargets,
+      nextTarget,
+    ]);
+    setSelectedViewer3DAnalysisTargetId(nextTarget.id);
+  };
+
+  const handleViewer3DAnalysisTargetUpdate = (
+    nextTarget: Viewer3DAnalysisTarget,
+  ) => {
+    setViewer3DAnalysisTargets((currentTargets) =>
+      currentTargets.map((currentTarget) =>
+        currentTarget.id === nextTarget.id ? nextTarget : currentTarget,
+      ),
+    );
+    setSelectedViewer3DAnalysisTargetId(nextTarget.id);
+  };
+
+  const handleViewer3DAnalysisTargetDelete = (targetId: string) => {
+    setViewer3DAnalysisTargets((currentTargets) => {
+      const nextTargets = currentTargets.filter(
+        (currentTarget) => currentTarget.id !== targetId,
+      );
+
+      if (selectedViewer3DAnalysisTargetId === targetId) {
+        setSelectedViewer3DAnalysisTargetId(nextTargets.at(-1)?.id);
+      }
+
+      return nextTargets;
+    });
+  };
+
   const handleSave = () => {
     if (!canSave) {
       return;
@@ -686,7 +810,7 @@ export function AssetCameraPanel({
                 className={cn(
                   "AssetCameraPanel AssetCameraPanel__container-16 flex max-h-[calc(100dvh-2rem)] max-w-[calc(100dvw-2rem)] min-w-0 flex-col overflow-hidden rounded-md border border-white/15 bg-neutral-950 text-white shadow-2xl",
                   viewMode === "3d"
-                    ? "h-[min(92dvh,56rem)] w-[min(96dvw,84rem)]"
+                    ? "h-[min(92dvh,56rem)] w-[min(98dvw,104rem)]"
                     : "h-[min(92dvh,92dvw)] w-[min(92dvh,92dvw)]",
                 )}
                 onClick={(event) => event.stopPropagation()}
@@ -723,23 +847,49 @@ export function AssetCameraPanel({
                   </button>
                 </div>
                 {viewMode === "3d" ? (
-                  <div className="AssetCameraPanel AssetCameraPanel__container-19 min-h-0 flex-1 p-3">
-                    {readyViewer3DModelFile ? (
-                      <Three3DViewer
-                        className="AssetCameraPanel AssetCameraPanel__viewer-1 h-full"
-                        config={currentViewer3DConfig}
-                        modelFile={readyViewer3DModelFile}
-                        onConfigChange={handleViewer3DConfigChange}
-                        onModelFileChange={handleViewer3DModelFileChange}
+                  <div className="AssetCameraPanel AssetCameraPanel__container-19 grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_16rem] gap-3 overflow-hidden p-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)] lg:grid-rows-[minmax(0,1fr)]">
+                    <div className="AssetCameraPanel AssetCameraPanel__viewer-wrap-1 h-full min-h-0 min-w-0">
+                      {readyViewer3DModelFile ? (
+                        <Three3DViewer
+                          activeAnalysisMode={viewer3DAnalysisMode}
+                          allowOptionBar
+                          analysisSummary={selectedViewer3DAnalysisItem?.summary}
+                          analysisTargets={viewer3DAnalysisTargets}
+                          className="AssetCameraPanel AssetCameraPanel__viewer-1 h-full"
+                          config={currentViewer3DConfig}
+                          modelFile={readyViewer3DModelFile}
+                          selectedAnalysisTargetId={
+                            selectedViewer3DAnalysisTargetId
+                          }
+                          onAnalysisTargetCreate={
+                            handleViewer3DAnalysisTargetCreate
+                          }
+                          onAnalysisTargetSelect={
+                            setSelectedViewer3DAnalysisTargetId
+                          }
+                          onConfigChange={handleViewer3DConfigChange}
+                          onModelFileChange={handleViewer3DModelFileChange}
+                        />
+                      ) : (
+                        <Viewer3DModelUploadPanel
+                          modelFile={currentViewer3DModelFile}
+                          onPlyFileChange={handleViewer3DPlyFileChange}
+                          onTextureFileChange={handleViewer3DTextureFileChange}
+                          onUseSample={handleUseSampleViewer3DModel}
+                        />
+                      )}
+                    </div>
+
+                    <Viewer3DAnalysisPanel
+                      activeMode={viewer3DAnalysisMode}
+                      items={viewer3DAnalysisItems}
+                      selectedItem={selectedViewer3DAnalysisItem}
+                      selectedTargetId={selectedViewer3DAnalysisTargetId}
+                      onDelete={handleViewer3DAnalysisTargetDelete}
+                      onModeChange={handleViewer3DAnalysisModeChange}
+                      onSelect={setSelectedViewer3DAnalysisTargetId}
+                      onUpdate={handleViewer3DAnalysisTargetUpdate}
                       />
-                    ) : (
-                      <Viewer3DModelUploadPanel
-                        modelFile={currentViewer3DModelFile}
-                        onPlyFileChange={handleViewer3DPlyFileChange}
-                        onTextureFileChange={handleViewer3DTextureFileChange}
-                        onUseSample={handleUseSampleViewer3DModel}
-                      />
-                    )}
                   </div>
                 ) : (
                   <div className="AssetCameraPanel AssetCameraPanel__container-19 grid min-h-0 flex-1 place-items-center p-3 [container-type:size]">
@@ -883,6 +1033,247 @@ function Viewer3DFilePicker({
   );
 }
 
+function Viewer3DAnalysisPanel({
+  activeMode,
+  items,
+  onDelete,
+  onModeChange,
+  onSelect,
+  onUpdate,
+  selectedItem,
+  selectedTargetId,
+}: {
+  activeMode?: Viewer3DAnalysisMode;
+  items: Viewer3DAnalysisPanelItem[];
+  selectedItem?: Viewer3DAnalysisPanelItem;
+  selectedTargetId?: string;
+  onDelete: (targetId: string) => void;
+  onModeChange: (mode: Viewer3DAnalysisMode) => void;
+  onSelect: (targetId: string) => void;
+  onUpdate: (target: Viewer3DAnalysisTarget) => void;
+}) {
+  const selectedTarget = selectedItem?.target;
+  const selectedSummary = selectedItem?.summary;
+
+  return (
+    <aside className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__aside-1 flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card p-2 text-card-foreground">
+      <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__stack-1 grid min-h-0 gap-2 overflow-y-auto pr-1">
+        <ControlSection icon={SquareDashedMousePointer} title="정밀 분석">
+          <div
+            className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__modes-1 grid grid-cols-2 gap-1.5"
+            role="group"
+            aria-label="3D 분석 대상 추가"
+          >
+            <ModeButton
+              active={activeMode === "point"}
+              icon={MousePointer2}
+              label="포인트"
+              onClick={() => onModeChange("point")}
+            />
+            <ModeButton
+              active={activeMode === "area"}
+              icon={SquareDashedMousePointer}
+              label="영역"
+              onClick={() => onModeChange("area")}
+            />
+          </div>
+
+          <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__status-1 grid grid-cols-2 gap-1.5">
+            <DetectionSetupStatusRow
+              label="대상"
+              value={`${items.length}개`}
+            />
+            <DetectionSetupStatusRow
+              label="모드"
+              value={activeMode === "area" ? "영역" : activeMode === "point" ? "포인트" : "탐색"}
+            />
+          </div>
+        </ControlSection>
+
+        <ControlSection icon={Box} title="대상 목록">
+          <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__list-1 grid gap-1.5">
+            {items.length ? (
+              items.map((item) => (
+                <button
+                  key={item.target.id}
+                  type="button"
+                  className={cn(
+                    "Viewer3DAnalysisPanel Viewer3DAnalysisPanel__item-1 grid min-w-0 gap-1 rounded-md border bg-card px-2 py-2 text-left transition hover:bg-accent",
+                    item.target.id === selectedTargetId
+                      ? "border-primary"
+                      : "border-border",
+                  )}
+                  onClick={() => onSelect(item.target.id)}
+                  style={{
+                    borderColor:
+                      item.target.id === selectedTargetId
+                        ? item.target.color
+                        : undefined,
+                  }}
+                >
+                  <span className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__item-title-1 flex min-w-0 items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-xs font-semibold">
+                      {item.target.name}
+                    </span>
+                    <span className="shrink-0 rounded-sm border border-border bg-background px-1 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      {item.target.kind === "area" ? "영역" : "포인트"}
+                    </span>
+                  </span>
+                  <span className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__item-value-1 truncate font-mono text-[11px] text-muted-foreground">
+                    최고 {item.summary.temperatureMax}℃ · Peak{" "}
+                    {item.summary.ultrasoundPeakDb} dB
+                  </span>
+                </button>
+              ))
+            ) : (
+              <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__empty-1 rounded-md border border-dashed border-border bg-background px-2 py-3 text-center text-[11px] font-semibold text-muted-foreground">
+                분석 대상 없음
+              </div>
+            )}
+          </div>
+        </ControlSection>
+
+        {selectedTarget ? (
+          <ControlSection icon={MousePointer2} title="대상 설정">
+            <label className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__field-1 grid min-w-0 gap-1">
+              <span className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__label-1 text-[10px] font-semibold text-muted-foreground">
+                이름
+              </span>
+              <input
+                className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__input-1 h-8 min-w-0 rounded-md border border-border bg-card px-2 text-xs font-semibold outline-none focus:border-primary"
+                value={selectedTarget.name}
+                onChange={(event) =>
+                  onUpdate({ ...selectedTarget, name: event.target.value })
+                }
+              />
+            </label>
+
+            <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__thresholds-1 grid grid-cols-2 gap-1.5">
+              <ThresholdField
+                label="온도"
+                suffix="℃"
+                value={selectedTarget.thresholds.temperature}
+                onChange={(temperature) =>
+                  onUpdate({
+                    ...selectedTarget,
+                    thresholds: {
+                      ...selectedTarget.thresholds,
+                      temperature,
+                    },
+                  })
+                }
+              />
+              <ThresholdField
+                label="초음파"
+                suffix="dB"
+                value={selectedTarget.thresholds.ultrasoundDb}
+                onChange={(ultrasoundDb) =>
+                  onUpdate({
+                    ...selectedTarget,
+                    thresholds: {
+                      ...selectedTarget.thresholds,
+                      ultrasoundDb,
+                    },
+                  })
+                }
+              />
+            </div>
+
+            <label className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__range-1 grid gap-1">
+              <span className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__range-label-1 flex items-center justify-between gap-2 text-[10px] font-semibold text-muted-foreground">
+                <span className="truncate">민감도</span>
+                <span className="shrink-0 font-mono text-foreground">
+                  {selectedTarget.sensitivity}%
+                </span>
+              </span>
+              <input
+                className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__range-input-1 h-2 w-full accent-primary"
+                max={100}
+                min={10}
+                onChange={(event) =>
+                  onUpdate({
+                    ...selectedTarget,
+                    sensitivity: Number(event.target.value),
+                  })
+                }
+                step={5}
+                type="range"
+                value={selectedTarget.sensitivity}
+              />
+            </label>
+
+            <label className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__check-1 flex min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-card px-2 py-1.5">
+              <span className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__check-label-1 truncate text-[11px] font-semibold text-muted-foreground">
+                알림 연동
+              </span>
+              <input
+                checked={selectedTarget.linkedAlarm}
+                className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__check-input-1 h-4 w-4 shrink-0 accent-primary"
+                onChange={(event) =>
+                  onUpdate({
+                    ...selectedTarget,
+                    linkedAlarm: event.target.checked,
+                  })
+                }
+                type="checkbox"
+              />
+            </label>
+
+            <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__setting-status-1 grid gap-1.5">
+              <DetectionSetupStatusRow
+                label="좌표"
+                value={formatViewer3DVector(selectedTarget.worldPosition)}
+              />
+              <DetectionSetupStatusRow
+                label="등록"
+                value={formatCreatedTime(selectedTarget.createdAt)}
+              />
+            </div>
+
+            <IconButton
+              icon={X}
+              label="삭제"
+              onClick={() => onDelete(selectedTarget.id)}
+              variant="danger"
+            />
+          </ControlSection>
+        ) : null}
+
+        {selectedSummary ? (
+          <ControlSection icon={Box} title="측정값">
+            <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__metrics-1 grid gap-1.5">
+              <DetectionSetupStatusRow
+                label="최고온도"
+                value={`${selectedSummary.temperatureMax}℃`}
+              />
+              <DetectionSetupStatusRow
+                label="평균온도"
+                value={`${selectedSummary.temperatureAverage}℃`}
+              />
+              <DetectionSetupStatusRow
+                label="최저온도"
+                value={`${selectedSummary.temperatureMin}℃`}
+              />
+              <DetectionSetupStatusRow
+                label="검출 dB"
+                value={`${selectedSummary.ultrasoundDetectedDb} dB`}
+              />
+              <DetectionSetupStatusRow
+                label="Peak"
+                value={`${selectedSummary.ultrasoundPeakDb} dB · ${selectedSummary.dominantFrequencyKHz} kHz`}
+              />
+              <DetectionSetupStatusRow
+                label="추이"
+                value={selectedSummary.trendLabel}
+              />
+            </div>
+          </ControlSection>
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
 function createViewer3DModelDraft(
   modelFile: Model3DFile | null,
 ): Model3DFile {
@@ -915,6 +1306,218 @@ function getPrimaryTextureSource(modelFile: Model3DFile | null) {
   return normalizeModelTextures(modelFile).find((texture) =>
     Boolean(texture.source),
   )?.source;
+}
+
+function buildViewer3DAnalysisSummary({
+  assetParts,
+  assetPartStates,
+  defaultThresholds,
+  index,
+  target,
+  temperatureData,
+  ultrasonicData,
+}: {
+  assetParts: AssetPartConfig[];
+  assetPartStates: AssetPartStatus[];
+  defaultThresholds: AssetThresholdConfig;
+  index: number;
+  target: Viewer3DAnalysisTarget;
+  temperatureData: TrendPoint[];
+  ultrasonicData: TrendPoint[];
+}): Viewer3DAnalysisSummary {
+  const latestTemperature = getLatestAnalysisTrendPoint(temperatureData);
+  const latestUltrasound = getLatestAnalysisTrendPoint(ultrasonicData);
+  const nearestPartState =
+    findNearestAssetPartState(target, assetParts, assetPartStates) ??
+    assetPartStates[index % Math.max(assetPartStates.length, 1)];
+  const targetOffset = getViewer3DTargetOffset(target);
+  const fallbackAverageTemperature =
+    defaultThresholds.temperature > 0
+      ? Math.max(0, defaultThresholds.temperature - 5)
+      : 0;
+  const baseAverageTemperature =
+    nearestPartState?.temperatureAverage ||
+    latestTemperature?.average ||
+    fallbackAverageTemperature;
+  const temperatureAverage = roundMetric(
+    Math.max(0, baseAverageTemperature + targetOffset * 0.35),
+  );
+  const temperatureMax = roundMetric(
+    Math.max(
+      temperatureAverage,
+      nearestPartState?.temperatureMax ||
+        latestTemperature?.max ||
+        temperatureAverage + 2.4 + target.sensitivity / 100,
+    ),
+  );
+  const temperatureMin = roundMetric(
+    Math.max(
+      0,
+      Math.min(
+        temperatureAverage,
+        latestTemperature?.min ??
+          temperatureAverage - 1.8 - target.sensitivity / 120,
+      ),
+    ),
+  );
+  const fallbackPeakDb =
+    defaultThresholds.ultrasoundDb > 0
+      ? Math.max(0, defaultThresholds.ultrasoundDb - 8)
+      : 0;
+  const ultrasoundPeakDb = roundMetric(
+    Math.max(
+      0,
+      nearestPartState?.ultrasoundPeakDb ||
+        latestUltrasound?.max ||
+        fallbackPeakDb + Math.max(targetOffset, 0),
+    ),
+  );
+  const ultrasoundDetectedDb = roundMetric(
+    Math.max(
+      0,
+      latestUltrasound?.average ?? ultrasoundPeakDb - 6 + targetOffset * 0.4,
+    ),
+  );
+  const dominantFrequencyKHz = roundMetric(
+    nearestPartState?.dominantFrequencyKHz ||
+      latestUltrasound?.peakFrequency ||
+      40 + targetOffset,
+  );
+
+  return {
+    dominantFrequencyKHz,
+    subtitle: `${target.kind === "area" ? "영역" : "포인트"} · ${formatViewer3DVector(target.worldPosition)}`,
+    temperatureAverage,
+    temperatureMax,
+    temperatureMin,
+    title: target.name,
+    trendLabel: buildAnalysisTrendLabel(temperatureData, ultrasonicData),
+    ultrasoundDetectedDb,
+    ultrasoundPeakDb,
+  };
+}
+
+function findNearestAssetPartState(
+  target: Viewer3DAnalysisTarget,
+  assetParts: AssetPartConfig[],
+  assetPartStates: AssetPartStatus[],
+) {
+  if (!assetParts.length || !assetPartStates.length) {
+    return undefined;
+  }
+
+  const targetPoint = getViewer3DTargetPercentPoint(target);
+  const nearestPart = assetParts.reduce<
+    { distance: number; part: AssetPartConfig } | undefined
+  >((nearest, part, index) => {
+    const anchorPoint = getAssetPartAnchorPoint(part, index);
+    const distance = Math.hypot(
+      targetPoint.x - anchorPoint.x,
+      targetPoint.y - anchorPoint.y,
+    );
+
+    if (!nearest || distance < nearest.distance) {
+      return { distance, part };
+    }
+
+    return nearest;
+  }, undefined);
+
+  return nearestPart
+    ? assetPartStates.find((state) => state.partId === nearestPart.part.id)
+    : undefined;
+}
+
+function getAssetPartAnchorPoint(part: AssetPartConfig, index: number) {
+  if (part.roi) {
+    return {
+      x: part.roi.x + part.roi.width / 2,
+      y: part.roi.y + part.roi.height / 2,
+    };
+  }
+
+  if (part.points.length) {
+    return {
+      x: getAverage(part.points.map((point) => point.x)),
+      y: getAverage(part.points.map((point) => point.y)),
+    };
+  }
+
+  return {
+    x: 24 + ((index * 19) % 52),
+    y: 28 + ((index * 23) % 48),
+  };
+}
+
+function getViewer3DTargetPercentPoint(target: Viewer3DAnalysisTarget) {
+  return {
+    x: clampNumber(50 + target.worldPosition.x * 28, 0, 100),
+    y: clampNumber(50 - target.worldPosition.y * 28, 0, 100),
+  };
+}
+
+function getViewer3DTargetOffset(target: Viewer3DAnalysisTarget) {
+  const vector = target.worldPosition;
+  const wave = Math.sin(vector.x * 7.17 + vector.y * 5.31 + vector.z * 3.19);
+
+  return roundMetric(wave * (target.kind === "area" ? 0.8 : 1.2));
+}
+
+function getLatestAnalysisTrendPoint(points: TrendPoint[]) {
+  return [...points].reverse().find(
+    (point) => point.average > 0 || point.max > 0 || (point.min ?? 0) > 0,
+  );
+}
+
+function buildAnalysisTrendLabel(
+  temperatureData: TrendPoint[],
+  ultrasonicData: TrendPoint[],
+) {
+  const temperatureDelta = getTrendDelta(temperatureData, "average");
+  const ultrasoundDelta = getTrendDelta(ultrasonicData, "average");
+
+  if (temperatureDelta === 0 && ultrasoundDelta === 0) {
+    return "변화 없음";
+  }
+
+  return `T ${formatTrendDelta(temperatureDelta, "℃")} · dB ${formatTrendDelta(ultrasoundDelta, "")}`;
+}
+
+function getTrendDelta(points: TrendPoint[], key: "average" | "max") {
+  const validPoints = points.filter((point) => point[key] > 0);
+  const firstPoint = validPoints.at(0);
+  const lastPoint = validPoints.at(-1);
+
+  if (!firstPoint || !lastPoint) {
+    return 0;
+  }
+
+  return roundMetric(lastPoint[key] - firstPoint[key]);
+}
+
+function formatTrendDelta(value: number, suffix: string) {
+  if (value === 0) {
+    return `0${suffix}`;
+  }
+
+  return `${value > 0 ? "+" : ""}${value}${suffix}`;
+}
+
+function formatViewer3DVector(vector: { x: number; y: number; z: number }) {
+  return `${roundMetric(vector.x)}, ${roundMetric(vector.y)}, ${roundMetric(vector.z)}`;
+}
+
+function formatCreatedTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function PanelModeButton({
@@ -1596,6 +2199,22 @@ function movePoint(point: PercentPoint, delta: PercentPoint): PercentPoint {
 
 function getRoiArea(roi?: DetectionRoiConfig) {
   return roi ? roi.width * roi.height : Number.POSITIVE_INFINITY;
+}
+
+function getAverage(values: number[]) {
+  if (!values.length) {
+    return 0;
+  }
+
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function roundMetric(value: number) {
+  return Number(value.toFixed(1));
 }
 
 function roundPercent(value: number) {

@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  Box,
   Gauge,
   MapPinned,
   SlidersHorizontal,
@@ -543,7 +544,7 @@ function AssetPartMetricCarousel({
           <AssetPartMiniMap part={activePart} />
           <div className="mt-1 flex min-w-0 items-center justify-between gap-1">
             <span className="truncate text-[10px] font-semibold text-muted-foreground">
-              {activePart.mode === "area" ? "영역 ROI" : "포인트"}
+              {getAssetPartModeLabel(activePart)}
             </span>
             <span
               className={cn(
@@ -582,6 +583,10 @@ function AssetPartMetricCarousel({
 }
 
 function AssetPartMiniMap({ part }: { part: AssetPartConfig }) {
+  if (part.source === "3d" && part.viewer3DTarget) {
+    return <AssetPart3DMiniMap part={part} />;
+  }
+
   return (
     <div className="AssetPartMiniMap AssetPartMiniMap__container-1 relative min-h-0 flex-1 overflow-hidden rounded-md border border-border/60 bg-card [background-image:linear-gradient(90deg,color-mix(in_oklch,var(--muted-foreground)_18%,transparent)_1px,transparent_1px),linear-gradient(color-mix(in_oklch,var(--muted-foreground)_18%,transparent)_1px,transparent_1px)] [background-size:18px_18px]">
       {part.roi ? (
@@ -607,6 +612,71 @@ function AssetPartMiniMap({ part }: { part: AssetPartConfig }) {
           {index + 1}
         </span>
       ))}
+    </div>
+  );
+}
+
+function AssetPart3DMiniMap({ part }: { part: AssetPartConfig }) {
+  const target = part.viewer3DTarget;
+  const point = part.points[0] ?? getRoiCenterPoint(part.roi);
+  const targetColor = target?.color ?? "var(--primary)";
+
+  if (target?.previewImageDataUrl) {
+    return (
+      <div className="AssetPart3DMiniMap AssetPart3DMiniMap__container-1 relative min-h-0 flex-1 overflow-hidden rounded-md border border-cyan-500/30 bg-slate-950">
+        <img
+          alt={`${part.name} 3D 캡쳐`}
+          className="AssetPart3DMiniMap AssetPart3DMiniMap__image-1 absolute inset-0 h-full w-full object-contain"
+          src={target.previewImageDataUrl}
+        />
+        <div className="AssetPart3DMiniMap AssetPart3DMiniMap__image-vignette-1 pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(2,6,23,0.18),transparent_32%,rgba(2,6,23,0.48))]" />
+        <div className="AssetPart3DMiniMap AssetPart3DMiniMap__badge-1 absolute left-1 top-1 inline-flex items-center gap-1 rounded-sm border border-cyan-200/25 bg-black/45 px-1.5 py-0.5 text-[9px] font-bold text-cyan-50">
+          <Box className="h-3 w-3" aria-hidden="true" />
+          {target.kind === "area" ? "3D 영역" : "3D 포인트"}
+        </div>
+        <span className="AssetPart3DMiniMap AssetPart3DMiniMap__coord-1 absolute bottom-1 left-1 right-1 truncate rounded-sm bg-black/45 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-cyan-50/90">
+          {formatViewer3DVector(target.worldPosition)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="AssetPart3DMiniMap AssetPart3DMiniMap__container-1 relative min-h-0 flex-1 overflow-hidden rounded-md border border-cyan-500/30 bg-slate-950">
+      <div className="AssetPart3DMiniMap AssetPart3DMiniMap__grid-1 absolute inset-0 opacity-30 [background-image:linear-gradient(90deg,rgba(125,211,252,0.26)_1px,transparent_1px),linear-gradient(rgba(125,211,252,0.2)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="AssetPart3DMiniMap AssetPart3DMiniMap__object-1 absolute left-[13%] top-[18%] h-[64%] w-[74%] -skew-x-6 rounded-md border border-cyan-200/25 bg-gradient-to-br from-cyan-300/20 via-slate-700/35 to-slate-950 shadow-[inset_0_0_22px_rgba(125,211,252,0.16)]" />
+      <div className="AssetPart3DMiniMap AssetPart3DMiniMap__edge-1 absolute left-[20%] top-[12%] h-[58%] w-[66%] -skew-x-6 rounded-md border border-white/10" />
+      <div className="AssetPart3DMiniMap AssetPart3DMiniMap__badge-1 absolute left-1 top-1 inline-flex items-center gap-1 rounded-sm border border-cyan-200/25 bg-black/35 px-1.5 py-0.5 text-[9px] font-bold text-cyan-50">
+        <Box className="h-3 w-3" aria-hidden="true" />
+        3D
+      </div>
+      {part.roi ? (
+        <span
+          className="AssetPart3DMiniMap AssetPart3DMiniMap__roi-1 absolute rounded-sm border-2 bg-cyan-300/15 shadow-[0_0_14px_rgba(34,211,238,0.32)]"
+          style={{
+            borderColor: targetColor,
+            height: `${part.roi.height}%`,
+            left: `${part.roi.x}%`,
+            top: `${part.roi.y}%`,
+            width: `${part.roi.width}%`,
+          }}
+        />
+      ) : null}
+      {point ? (
+        <span
+          className="AssetPart3DMiniMap AssetPart3DMiniMap__point-1 absolute grid h-4 w-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/70 text-[9px] font-bold text-white shadow-[0_0_16px_rgba(34,211,238,0.42)]"
+          style={{
+            background: targetColor,
+            left: `${point.x}%`,
+            top: `${point.y}%`,
+          }}
+        >
+          {target?.kind === "area" ? "A" : "P"}
+        </span>
+      ) : null}
+      <span className="AssetPart3DMiniMap AssetPart3DMiniMap__coord-1 absolute bottom-1 left-1 right-1 truncate rounded-sm bg-black/35 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-cyan-50/90">
+        {target ? formatViewer3DVector(target.worldPosition) : "3D 좌표 대기"}
+      </span>
     </div>
   );
 }
@@ -645,11 +715,38 @@ function DetectionMetricInfoRow({
 }
 
 function formatAssetPartScope(part: AssetPartConfig) {
+  if (part.source === "3d" && part.viewer3DTarget) {
+    return formatViewer3DVector(part.viewer3DTarget.worldPosition);
+  }
+
   if (part.mode === "area" && part.roi) {
     return `${Math.round(part.roi.width)}×${Math.round(part.roi.height)}%`;
   }
 
   return `${part.points.length}개`;
+}
+
+function getAssetPartModeLabel(part: AssetPartConfig) {
+  if (part.source === "3d") {
+    return part.viewer3DTarget?.kind === "area" ? "3D 영역" : "3D 포인트";
+  }
+
+  return part.mode === "area" ? "영역 ROI" : "포인트";
+}
+
+function getRoiCenterPoint(roi?: AssetPartConfig["roi"]) {
+  if (!roi) {
+    return undefined;
+  }
+
+  return {
+    x: roi.x + roi.width / 2,
+    y: roi.y + roi.height / 2,
+  };
+}
+
+function formatViewer3DVector(vector: { x: number; y: number; z: number }) {
+  return `${roundOne(vector.x)}, ${roundOne(vector.y)}, ${roundOne(vector.z)}`;
 }
 
 function roundOne(value: number) {

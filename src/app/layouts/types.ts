@@ -242,6 +242,17 @@ export type AssetThresholdConfig = {
   ultrasoundCriticalDb?: number;
 };
 
+export type AssetPartViewer3DTarget = {
+  color?: string;
+  kind: "area" | "point";
+  previewImageDataUrl?: string;
+  worldArea?: {
+    end: Vector3;
+    start: Vector3;
+  };
+  worldPosition: Vector3;
+};
+
 export type AssetPartConfig = {
   id: string;
   linkedAlarm: boolean;
@@ -249,7 +260,9 @@ export type AssetPartConfig = {
   name: string;
   points: DetectionPointConfig[];
   roi?: DetectionRoiConfig;
+  source?: "3d" | "camera";
   thresholds: AssetThresholdConfig;
+  viewer3DTarget?: AssetPartViewer3DTarget;
 };
 
 export type AssetPartStatus = {

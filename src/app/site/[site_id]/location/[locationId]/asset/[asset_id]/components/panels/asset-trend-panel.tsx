@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Settings2, X } from "lucide-react";
 
 import type { ReferenceLineConfig, TrendPoint } from "@/app/layouts/types";
@@ -33,6 +33,7 @@ const PANEL_STYLE = {
 } as const;
 
 const DEFAULT_AUTO_RANGE_INTERVAL_SECONDS = 30;
+const DEFAULT_ULTRASOUND_Y_AXIS_MAX = 120;
 
 const trendDisplayModeOptions: Array<{
   id: AssetTrendDisplayMode;
@@ -93,24 +94,7 @@ export function AssetTrendPanel({
   );
   const [displayMode, setDisplayMode] =
     useState<AssetTrendDisplayMode>("separate");
-  const [combinedXAxisMax, setCombinedXAxisMax] = useState(0);
-  const [ultrasoundXAxisMax, setUltrasoundXAxisMax] = useState(0);
-  const [ultrasoundYAxisMax, setUltrasoundYAxisMax] = useState(120);
-  const [temperatureXAxisMax, setTemperatureXAxisMax] = useState(0);
-  const [temperatureYAxisMax, setTemperatureYAxisMax] = useState(0);
   const activeRangeConfig = rangeAxisConfig[activeRangeId];
-  const ultrasoundAxisConfig = useMemo(
-    () => buildChartAxisConfig(activeRangeConfig, ultrasoundXAxisMax),
-    [activeRangeConfig, ultrasoundXAxisMax],
-  );
-  const temperatureAxisConfig = useMemo(
-    () => buildChartAxisConfig(activeRangeConfig, temperatureXAxisMax),
-    [activeRangeConfig, temperatureXAxisMax],
-  );
-  const combinedAxisConfig = useMemo(
-    () => buildChartAxisConfig(activeRangeConfig, combinedXAxisMax),
-    [activeRangeConfig, combinedXAxisMax],
-  );
   const isCombinedDisplay = displayMode === "combined";
 
   useEffect(() => {
@@ -259,24 +243,12 @@ export function AssetTrendPanel({
       {isSettingsOpen ? (
         <TrendSettingsPopover
           autoRangeIntervalSeconds={autoRangeIntervalSeconds}
-          combinedXAxisMax={combinedXAxisMax}
           displayMode={displayMode}
           isAutoRangeEnabled={isAutoRangeEnabled}
-          rangeMax={activeRangeConfig.max}
-          rangeUnitLabel={activeRangeConfig.unitLabel}
-          temperatureXAxisMax={temperatureXAxisMax}
-          temperatureYAxisMax={temperatureYAxisMax}
-          ultrasoundXAxisMax={ultrasoundXAxisMax}
-          ultrasoundYAxisMax={ultrasoundYAxisMax}
           onAutoRangeIntervalSecondsChange={setAutoRangeIntervalSeconds}
-          onCombinedXAxisMaxChange={setCombinedXAxisMax}
           onClose={() => setIsSettingsOpen(false)}
           onDisplayModeChange={setDisplayMode}
           onIsAutoRangeEnabledChange={setIsAutoRangeEnabled}
-          onTemperatureXAxisMaxChange={setTemperatureXAxisMax}
-          onTemperatureYAxisMaxChange={setTemperatureYAxisMax}
-          onUltrasoundXAxisMaxChange={setUltrasoundXAxisMax}
-          onUltrasoundYAxisMaxChange={setUltrasoundYAxisMax}
         />
       ) : null}
 
@@ -294,12 +266,11 @@ export function AssetTrendPanel({
           <AssetCombinedTrendChart
             temperatureData={temperatureData}
             temperatureReferenceLines={temperatureReferenceLines}
-            temperatureYAxisMax={temperatureYAxisMax || undefined}
             ultrasoundData={ultrasonicData}
             ultrasoundReferenceLines={ultrasonicReferenceLines}
-            ultrasoundYAxisMax={ultrasoundYAxisMax}
-            xAxisMax={combinedAxisConfig.max}
-            xAxisTicks={combinedAxisConfig.ticks}
+            ultrasoundYAxisMax={DEFAULT_ULTRASOUND_Y_AXIS_MAX}
+            xAxisMax={activeRangeConfig.max}
+            xAxisTicks={activeRangeConfig.ticks}
             xAxisUnitLabel={activeRangeConfig.unitLabel}
           />
         ) : (
@@ -307,19 +278,18 @@ export function AssetTrendPanel({
             <AssetUltrasoundTrendChart
               data={ultrasonicData}
               referenceLines={ultrasonicReferenceLines}
-              xAxisMax={ultrasoundAxisConfig.max}
-              xAxisTicks={ultrasoundAxisConfig.ticks}
+              xAxisMax={activeRangeConfig.max}
+              xAxisTicks={activeRangeConfig.ticks}
               xAxisUnitLabel={activeRangeConfig.unitLabel}
-              yAxisMax={ultrasoundYAxisMax}
+              yAxisMax={DEFAULT_ULTRASOUND_Y_AXIS_MAX}
             />
 
             <AssetTemperatureTrendChart
               data={temperatureData}
               referenceLines={temperatureReferenceLines}
-              xAxisMax={temperatureAxisConfig.max}
-              xAxisTicks={temperatureAxisConfig.ticks}
+              xAxisMax={activeRangeConfig.max}
+              xAxisTicks={activeRangeConfig.ticks}
               xAxisUnitLabel={activeRangeConfig.unitLabel}
-              yAxisMax={temperatureYAxisMax || undefined}
             />
           </>
         )}
@@ -328,65 +298,22 @@ export function AssetTrendPanel({
   );
 }
 
-function buildChartAxisConfig(
-  rangeConfig: (typeof rangeAxisConfig)[AssetTrendRangeId],
-  requestedMax: number,
-) {
-  const max =
-    requestedMax > 0
-      ? Math.min(requestedMax, rangeConfig.max)
-      : rangeConfig.max;
-  const ticks = rangeConfig.ticks.filter((tick) => {
-    if (tick === "현재") {
-      return true;
-    }
-
-    return Math.abs(Number(tick)) <= max;
-  });
-
-  return { max, ticks };
-}
-
 function TrendSettingsPopover({
   autoRangeIntervalSeconds,
-  combinedXAxisMax,
   displayMode,
   isAutoRangeEnabled,
-  rangeMax,
-  rangeUnitLabel,
-  temperatureXAxisMax,
-  temperatureYAxisMax,
-  ultrasoundXAxisMax,
-  ultrasoundYAxisMax,
   onAutoRangeIntervalSecondsChange,
-  onCombinedXAxisMaxChange,
   onClose,
   onDisplayModeChange,
   onIsAutoRangeEnabledChange,
-  onTemperatureXAxisMaxChange,
-  onTemperatureYAxisMaxChange,
-  onUltrasoundXAxisMaxChange,
-  onUltrasoundYAxisMaxChange,
 }: {
   autoRangeIntervalSeconds: number;
-  combinedXAxisMax: number;
   displayMode: AssetTrendDisplayMode;
   isAutoRangeEnabled: boolean;
-  rangeMax: number;
-  rangeUnitLabel: string;
-  temperatureXAxisMax: number;
-  temperatureYAxisMax: number;
-  ultrasoundXAxisMax: number;
-  ultrasoundYAxisMax: number;
   onAutoRangeIntervalSecondsChange: (value: number) => void;
-  onCombinedXAxisMaxChange: (value: number) => void;
   onClose: () => void;
   onDisplayModeChange: (value: AssetTrendDisplayMode) => void;
   onIsAutoRangeEnabledChange: (value: boolean) => void;
-  onTemperatureXAxisMaxChange: (value: number) => void;
-  onTemperatureYAxisMaxChange: (value: number) => void;
-  onUltrasoundXAxisMaxChange: (value: number) => void;
-  onUltrasoundYAxisMaxChange: (value: number) => void;
 }) {
   return (
     <div
@@ -454,80 +381,6 @@ function TrendSettingsPopover({
         label="Range 자동 전환"
         onChange={onIsAutoRangeEnabledChange}
       />
-      {displayMode === "combined" ? (
-        <div
-          style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 1fr" }}
-        >
-          <div style={{ gridColumn: "1 / -1" }}>
-            <SettingNumberInput
-              label="통합 X 최대"
-              max={rangeMax}
-              min={0}
-              placeholder={`자동 ${rangeMax}`}
-              suffix={rangeUnitLabel}
-              value={combinedXAxisMax}
-              onChange={onCombinedXAxisMaxChange}
-            />
-          </div>
-          <SettingNumberInput
-            label="초음파 Y 최대"
-            max={300}
-            min={30}
-            suffix="dB"
-            value={ultrasoundYAxisMax}
-            onChange={onUltrasoundYAxisMaxChange}
-          />
-          <SettingNumberInput
-            label="온도 Y 최대"
-            max={500}
-            min={0}
-            placeholder="자동"
-            suffix="℃"
-            value={temperatureYAxisMax}
-            onChange={onTemperatureYAxisMaxChange}
-          />
-        </div>
-      ) : (
-        <div
-          style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 1fr" }}
-        >
-          <SettingNumberInput
-            label="초음파 X 최대"
-            max={rangeMax}
-            min={0}
-            placeholder={`자동 ${rangeMax}`}
-            suffix={rangeUnitLabel}
-            value={ultrasoundXAxisMax}
-            onChange={onUltrasoundXAxisMaxChange}
-          />
-          <SettingNumberInput
-            label="초음파 Y 최대"
-            max={300}
-            min={30}
-            suffix="dB"
-            value={ultrasoundYAxisMax}
-            onChange={onUltrasoundYAxisMaxChange}
-          />
-          <SettingNumberInput
-            label="온도 X 최대"
-            max={rangeMax}
-            min={0}
-            placeholder={`자동 ${rangeMax}`}
-            suffix={rangeUnitLabel}
-            value={temperatureXAxisMax}
-            onChange={onTemperatureXAxisMaxChange}
-          />
-          <SettingNumberInput
-            label="온도 Y 최대"
-            max={500}
-            min={0}
-            placeholder="자동"
-            suffix="℃"
-            value={temperatureYAxisMax}
-            onChange={onTemperatureYAxisMaxChange}
-          />
-        </div>
-      )}
     </div>
   );
 }

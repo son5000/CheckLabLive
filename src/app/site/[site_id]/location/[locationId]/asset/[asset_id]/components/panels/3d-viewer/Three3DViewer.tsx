@@ -293,7 +293,17 @@ export function Three3DViewer({
     setAnalysisPointerState(undefined);
 
     if (draft) {
-      onAnalysisTargetCreate?.(draft);
+      const previewImageDataUrl = captureAnalysisPreviewImage({
+        camera: cameraRef.current,
+        endClient: { x: event.clientX, y: event.clientY },
+        renderer: rendererRef.current,
+        scene: sceneRef.current,
+        state: analysisPointerState,
+      });
+
+      onAnalysisTargetCreate?.(
+        previewImageDataUrl ? { ...draft, previewImageDataUrl } : draft,
+      );
     }
   };
 
@@ -635,6 +645,187 @@ function buildAnalysisDraft(
       : undefined,
     worldPosition: toVector3(centerHit),
   };
+}
+
+function captureAnalysisPreviewImage({
+  camera,
+  endClient,
+  renderer,
+  scene,
+  state,
+}: {
+  camera: THREE.PerspectiveCamera | null;
+  endClient: ClientPoint;
+  renderer: THREE.WebGLRenderer | null;
+  scene: THREE.Scene | null;
+  state: AnalysisPointerState;
+}) {
+  if (!camera || !renderer || !scene) {
+    return undefined;
+  }
+
+  const sourceCanvas = renderer.domElement;
+  const bounds = sourceCanvas.getBoundingClientRect();
+
+  if (
+    !bounds.width ||
+    !bounds.height ||
+    !sourceCanvas.width ||
+    !sourceCanvas.height
+  ) {
+    return undefined;
+  }
+
+  const captureRect = getAnalysisCaptureClientRect(state, endClient, bounds);
+  const scaleX = sourceCanvas.width / bounds.width;
+  const scaleY = sourceCanvas.height / bounds.height;
+  const sourceX = Math.round((captureRect.left - bounds.left) * scaleX);
+  const sourceY = Math.round((captureRect.top - bounds.top) * scaleY);
+  const sourceWidth = Math.max(1, Math.round(captureRect.width * scaleX));
+  const sourceHeight = Math.max(1, Math.round(captureRect.height * scaleY));
+  const outputScale = Math.min(1, 480 / Math.max(sourceWidth, sourceHeight));
+  const outputCanvas = document.createElement("canvas");
+  const outputWidth = Math.max(1, Math.round(sourceWidth * outputScale));
+  const outputHeight = Math.max(1, Math.round(sourceHeight * outputScale));
+
+  renderer.render(scene, camera);
+  outputCanvas.width = outputWidth;
+  outputCanvas.height = outputHeight;
+
+  const context = outputCanvas.getContext("2d");
+
+  if (!context) {
+    return undefined;
+  }
+
+  context.drawImage(
+    sourceCanvas,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    outputWidth,
+    outputHeight,
+  );
+  drawAnalysisCaptureOverlay(context, {
+    captureRect,
+    endClient,
+    outputHeight,
+    outputWidth,
+    state,
+  });
+
+  try {
+    return outputCanvas.toDataURL("image/png");
+  } catch {
+    return undefined;
+  }
+}
+
+function getAnalysisCaptureClientRect(
+  state: AnalysisPointerState,
+  endClient: ClientPoint,
+  bounds: DOMRect,
+) {
+  if (state.mode === "point") {
+    const minSide = Math.min(bounds.width, bounds.height);
+    const size = clamp(minSide * 0.3, 96, 180);
+
+    return clampCaptureClientRect(
+      endClient.x - size / 2,
+      endClient.y - size / 2,
+      size,
+      size,
+      bounds,
+    );
+  }
+
+  const left = Math.min(state.startClient.x, endClient.x);
+  const top = Math.min(state.startClient.y, endClient.y);
+  const width = Math.abs(endClient.x - state.startClient.x);
+  const height = Math.abs(endClient.y - state.startClient.y);
+  const margin = clamp(Math.max(width, height) * 0.32, 32, 96);
+
+  return clampCaptureClientRect(
+    left - margin,
+    top - margin,
+    width + margin * 2,
+    height + margin * 2,
+    bounds,
+  );
+}
+
+function clampCaptureClientRect(
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+  bounds: DOMRect,
+) {
+  const clampedWidth = Math.min(Math.max(width, 1), bounds.width);
+  const clampedHeight = Math.min(Math.max(height, 1), bounds.height);
+
+  return {
+    height: clampedHeight,
+    left: clamp(left, bounds.left, bounds.right - clampedWidth),
+    top: clamp(top, bounds.top, bounds.bottom - clampedHeight),
+    width: clampedWidth,
+  };
+}
+
+function drawAnalysisCaptureOverlay(
+  context: CanvasRenderingContext2D,
+  {
+    captureRect,
+    endClient,
+    outputHeight,
+    outputWidth,
+    state,
+  }: {
+    captureRect: { height: number; left: number; top: number; width: number };
+    endClient: ClientPoint;
+    outputHeight: number;
+    outputWidth: number;
+    state: AnalysisPointerState;
+  },
+) {
+  const scaleX = outputWidth / captureRect.width;
+  const scaleY = outputHeight / captureRect.height;
+
+  if (state.mode === "point") {
+    const x = (endClient.x - captureRect.left) * scaleX;
+    const y = (endClient.y - captureRect.top) * scaleY;
+    const radius = Math.max(8, Math.min(outputWidth, outputHeight) * 0.055);
+
+    context.save();
+    context.fillStyle = "rgba(34, 211, 238, 0.9)";
+    context.strokeStyle = "rgba(255, 255, 255, 0.92)";
+    context.lineWidth = Math.max(2, radius * 0.28);
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.restore();
+    return;
+  }
+
+  const left = (Math.min(state.startClient.x, endClient.x) - captureRect.left) * scaleX;
+  const top = (Math.min(state.startClient.y, endClient.y) - captureRect.top) * scaleY;
+  const width = Math.abs(endClient.x - state.startClient.x) * scaleX;
+  const height = Math.abs(endClient.y - state.startClient.y) * scaleY;
+  const lineWidth = Math.max(2, Math.min(outputWidth, outputHeight) * 0.014);
+
+  context.save();
+  context.fillStyle = "rgba(103, 232, 249, 0.14)";
+  context.strokeStyle = "rgba(165, 243, 252, 0.95)";
+  context.lineWidth = lineWidth;
+  context.shadowColor = "rgba(34, 211, 238, 0.45)";
+  context.shadowBlur = lineWidth * 4;
+  context.fillRect(left, top, width, height);
+  context.strokeRect(left, top, width, height);
+  context.restore();
 }
 
 function getAnalysisDragRect(

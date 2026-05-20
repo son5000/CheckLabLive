@@ -102,29 +102,32 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
           <div
             className="LoginPanel LoginPanel__visual-content-1 relative z-10 flex w-full flex-col justify-between p-10 xl:p-12"
             style={{
-              backgroundImage: 'url(/images/facility_example.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center right',
-              backgroundAttachment: 'fixed',
+              backgroundImage: "url(/images/facility_example.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center right",
+              backgroundAttachment: "fixed",
             }}
           >
-            <div className="absolute inset-0 rounded-none" style={{
-              background: isDarkMode
-                ? 'radial-gradient(ellipse at bottom right, rgba(0,0,0,0.3), rgba(0,0,0,0.6))'
-                : 'radial-gradient(ellipse at bottom right, rgba(255,255,255,0.4), rgba(255,255,255,0.7))',
-              pointerEvents: 'none'
-            }} />
+            <div
+              className="absolute inset-0 rounded-none"
+              style={{
+                background: isDarkMode
+                  ? "radial-gradient(ellipse at bottom right, rgba(0,0,0,0.3), rgba(0,0,0,0.6))"
+                  : "radial-gradient(ellipse at bottom right, rgba(255,255,255,0.4), rgba(255,255,255,0.7))",
+                pointerEvents: "none",
+              }}
+            />
             <div
               className="LoginPanel LoginPanel__visual-fade-1 absolute inset-y-0 right-0 z-0 w-[58%] backdrop-blur-[2px]"
               style={{
                 background: isDarkMode
-                  ? 'linear-gradient(90deg, rgba(15,23,42,0) 0%, rgba(15,23,42,0.64) 58%, #0f172a 100%)'
-                  : 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 56%, #ffffff 100%)',
+                  ? "linear-gradient(90deg, rgba(15,23,42,0) 0%, rgba(15,23,42,0.64) 58%, #0f172a 100%)"
+                  : "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 56%, #ffffff 100%)",
                 maskImage:
-                  'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.55) 36%, #000 72%)',
-                pointerEvents: 'none',
+                  "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.55) 36%, #000 72%)",
+                pointerEvents: "none",
                 WebkitMaskImage:
-                  'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.55) 36%, #000 72%)',
+                  "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.55) 36%, #000 72%)",
               }}
             />
 
@@ -137,7 +140,9 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
                 />
               </div>
               <div className="LoginPanel LoginPanel__brand-copy-1 min-w-0">
-                <p className={`LoginPanel LoginPanel__product-1 text-lg font-bold tracking-tight ${cn("text-white", "text-slate-950")}`}>
+                <p
+                  className={`LoginPanel LoginPanel__product-1 text-lg font-bold tracking-tight ${cn("text-white", "text-slate-950")}`}
+                >
                   CheckLabLive
                 </p>
                 <p
@@ -188,7 +193,8 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
                     "text-slate-700",
                   )}`}
                 >
-                  AI 기반 실시간 분석으로 설비 상태를 예측하고, 문제를 사전에 방지하세요.
+                  실시간 분석으로 설비 상태를 예측하고, 문제를 사전에
+                  방지하세요.
                 </p>
               </div>
 
@@ -237,7 +243,6 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
                   isDarkMode={isDarkMode}
                 />
               </div>
-
             </div>
           </div>
         </div>
@@ -322,7 +327,9 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
 
             {/* 입력 필드 */}
             <div className="LoginPanel LoginPanel__fields-1 grid gap-4">
-              <label className={`LoginPanel LoginPanel__field-1 grid gap-2 text-sm font-medium ${cn("text-white", "text-slate-950")}`}>
+              <label
+                className={`LoginPanel LoginPanel__field-1 grid gap-2 text-sm font-medium ${cn("text-white", "text-slate-950")}`}
+              >
                 <span>아이디</span>
                 <span
                   className={`LoginPanel LoginPanel__input-shell-1 flex h-11 items-center gap-3 rounded-lg transition-all duration-200 ${cn(
@@ -350,7 +357,9 @@ export function LoginPanel({ redirectTo = "/" }: LoginPanelProps) {
                 </span>
               </label>
 
-              <label className={`LoginPanel LoginPanel__field-2 grid gap-2 text-sm font-medium ${cn("text-white", "text-slate-950")}`}>
+              <label
+                className={`LoginPanel LoginPanel__field-2 grid gap-2 text-sm font-medium ${cn("text-white", "text-slate-950")}`}
+              >
                 <span>비밀번호</span>
                 <span
                   className={`LoginPanel LoginPanel__input-shell-2 flex h-11 items-center gap-3 rounded-lg transition-all duration-200 ${cn(
@@ -451,7 +460,9 @@ function FeatureCard({
         >
           <Icon className={`h-5 w-5 ${iconText}`} />
         </div>
-        <span className={`text-xs font-bold mt-1 ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+        <span
+          className={`text-xs font-bold mt-1 ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+        >
           {number}
         </span>
       </div>

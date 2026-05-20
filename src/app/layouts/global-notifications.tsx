@@ -70,15 +70,9 @@ export function GlobalNotifications({
   onOpen,
 }: GlobalNotificationsProps) {
   const { settings } = useNotificationSettings();
-
-  if (!settings.enabled) {
-    return null;
-  }
-
-  const visibleNotifications = notifications.slice(
-    0,
-    GLOBAL_NOTIFICATION_STACK_LIMIT,
-  );
+  const visibleNotifications = settings.enabled
+    ? notifications.slice(0, GLOBAL_NOTIFICATION_STACK_LIMIT)
+    : [];
   const firstVisibleNotification = visibleNotifications[0] ?? null;
   const stackedNotifications = visibleNotifications
     .slice(1)
@@ -95,6 +89,14 @@ export function GlobalNotifications({
   const exitSequenceRef = useRef(0);
 
   useLayoutEffect(() => {
+    if (!settings.enabled) {
+      previousVisibleNotificationRef.current = null;
+      setExitingNotifications((currentNotifications) =>
+        currentNotifications.length ? [] : currentNotifications,
+      );
+      return;
+    }
+
     const previousNotification = previousVisibleNotificationRef.current;
     const isPreviousNotificationStillVisible = previousNotification
       ? notifications.some(
@@ -126,7 +128,11 @@ export function GlobalNotifications({
     }
 
     previousVisibleNotificationRef.current = firstVisibleNotification;
-  }, [firstVisibleNotification, notifications]);
+  }, [firstVisibleNotification, notifications, settings.enabled]);
+
+  if (!settings.enabled) {
+    return null;
+  }
 
   if (!firstVisibleNotification && !exitingNotifications.length) {
     return null;

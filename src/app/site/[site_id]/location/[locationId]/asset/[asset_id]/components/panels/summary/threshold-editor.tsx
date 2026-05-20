@@ -206,7 +206,7 @@ export function ThresholdEditor({
             aria-hidden="true"
           />
         )}
-        Save Thresholds
+        임계치 저장
       </button>
     </div>
   );

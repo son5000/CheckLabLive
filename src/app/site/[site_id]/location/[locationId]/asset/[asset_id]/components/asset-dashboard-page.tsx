@@ -145,6 +145,9 @@ export function AssetDashboardPage({
   const [assetParts, setAssetParts] = useState<AssetPartConfig[]>(
     () => remoteDashboard?.initialAssetParts ?? [],
   );
+  const previousRemoteAssetIdRef = useRef<string | undefined>(
+    remoteDashboard?.asset_id,
+  );
   const [selectedAssetPartId, setSelectedAssetPartId] =
     useState<string>();
   const [assetThresholds, setAssetThresholds] =
@@ -187,9 +190,23 @@ export function AssetDashboardPage({
   }, [remoteSnapshot?.trend?.selectedRangeId]);
 
   useEffect(() => {
-    setAssetParts(remoteSnapshot?.initialAssetParts ?? []);
-    setSelectedAssetPartId(undefined);
-    setIsAddingAssetPart(false);
+    const nextRemoteAssetId = remoteSnapshot?.asset_id;
+    const isAssetChanged =
+      previousRemoteAssetIdRef.current !== nextRemoteAssetId;
+    const remoteAssetParts = remoteSnapshot?.initialAssetParts ?? [];
+
+    setAssetParts((currentParts) =>
+      isAssetChanged
+        ? remoteAssetParts
+        : mergeAssetPartConfigs(remoteAssetParts, currentParts),
+    );
+
+    if (isAssetChanged) {
+      setSelectedAssetPartId(undefined);
+      setIsAddingAssetPart(false);
+    }
+
+    previousRemoteAssetIdRef.current = nextRemoteAssetId;
   }, [remoteSnapshot?.asset_id, remoteSnapshot?.initialAssetParts]);
 
   useEffect(() => {
@@ -481,11 +498,22 @@ export function AssetDashboardPage({
 
   const handleUpdateAssetPart = (nextPart: AssetPartConfig) => {
     setAssetParts((currentParts) =>
-      currentParts.map((currentPart) =>
-        currentPart.id === nextPart.id ? nextPart : currentPart,
-      ),
+      currentParts.some((currentPart) => currentPart.id === nextPart.id)
+        ? currentParts.map((currentPart) =>
+            currentPart.id === nextPart.id ? nextPart : currentPart,
+          )
+        : [nextPart, ...currentParts],
     );
     setSelectedAssetPartId(nextPart.id);
+  };
+
+  const handleDeleteAssetPart = (partId: string) => {
+    setAssetParts((currentParts) =>
+      currentParts.filter((currentPart) => currentPart.id !== partId),
+    );
+    setSelectedAssetPartId((currentPartId) =>
+      currentPartId === partId ? undefined : currentPartId,
+    );
   };
 
   const handleSelectAssetPart = (partId: string) => {
@@ -632,6 +660,7 @@ export function AssetDashboardPage({
             onCancelAssetPart={() => setIsAddingAssetPart(false)}
             onCameraSelect={setActiveCameraId}
             onCreateAssetPart={handleCreateAssetPart}
+            onDeleteAssetPart={handleDeleteAssetPart}
             onSelectAssetPart={setSelectedAssetPartId}
             onUpdateAssetPart={handleUpdateAssetPart}
             temperatureData={temperatureData}
@@ -1284,6 +1313,21 @@ function mergeAssetPartStates(
   return Array.from(stateByPartId.values());
 }
 
+function mergeAssetPartConfigs(
+  remoteParts: AssetPartConfig[],
+  currentParts: AssetPartConfig[],
+) {
+  const partById = new Map(
+    remoteParts.map((part) => [part.id, part]),
+  );
+
+  currentParts.forEach((part) => {
+    partById.set(part.id, part);
+  });
+
+  return Array.from(partById.values());
+}
+
 function mergeAssetEvents(
   remoteEvents: AssetEventRecord[],
   liveEvents: AssetEventRecord[],
@@ -1411,6 +1455,10 @@ function buildAssetPartStates(
   const temperaturePoints = getTemperaturePoints(sample);
 
   return parts.map((part) => {
+    if (part.source === "3d" && part.viewer3DTarget) {
+      return buildViewer3DAssetPartState(part, sample);
+    }
+
     const partTemperaturePoints = findPartTemperaturePoints(
       part,
       temperaturePoints,
@@ -1452,6 +1500,84 @@ function buildAssetPartStates(
       ultrasoundPeakDb,
     };
   });
+}
+
+function buildViewer3DAssetPartState(
+  part: AssetPartConfig,
+  sample: AssetDashboardSample,
+): AssetPartStatus {
+  const temperaturePoints = getTemperaturePoints(sample);
+  const ultrasoundDetections = sample.ultrasoundDetections;
+  const averageTemperature = getAverage(
+    temperaturePoints.map((point) => point.temperature),
+  );
+  const maxTemperature = temperaturePoints.length
+    ? Math.max(...temperaturePoints.map((point) => point.temperature))
+    : 0;
+  const maxUltrasoundDetection = ultrasoundDetections.reduce<
+    UltrasoundDetection | undefined
+  >(
+    (currentMax, detection) =>
+      !currentMax || detection.peakDb > currentMax.peakDb
+        ? detection
+        : currentMax,
+    undefined,
+  );
+  const offset = getViewer3DAssetPartOffset(part);
+  const temperatureAverage = roundOne(
+    Math.max(
+      0,
+      averageTemperature || Math.max(part.thresholds.temperature - 5, 0),
+    ) + offset * 0.35,
+  );
+  const temperatureMax = roundOne(
+    Math.max(
+      temperatureAverage,
+      maxTemperature || temperatureAverage + 2.4,
+    ) + Math.max(offset, 0),
+  );
+  const ultrasoundPeakDb = roundOne(
+    Math.max(
+      0,
+      maxUltrasoundDetection?.peakDb ||
+        Math.max(part.thresholds.ultrasoundDb - 8, 0),
+    ) + Math.max(offset, 0),
+  );
+  const dominantFrequencyKHz = roundOne(
+    maxUltrasoundDetection?.dominantFrequencyKHz || 40 + offset,
+  );
+  const temperatureJudgement = classifyByThreshold(
+    temperatureMax,
+    part.thresholds.temperature,
+    sample.threshold.cautionMargin,
+  );
+  const ultrasoundJudgement = classifyByThreshold(
+    ultrasoundPeakDb,
+    part.thresholds.ultrasoundDb,
+    6,
+  );
+
+  return {
+    dominantFrequencyKHz,
+    judgement: mergeJudgements([temperatureJudgement, ultrasoundJudgement]),
+    partId: part.id,
+    temperatureAverage,
+    temperatureMax,
+    ultrasoundPeakDb,
+  };
+}
+
+function getViewer3DAssetPartOffset(part: AssetPartConfig) {
+  const vector = part.viewer3DTarget?.worldPosition;
+
+  if (!vector) {
+    return 0;
+  }
+
+  return roundOne(
+    Math.sin(vector.x * 7.17 + vector.y * 5.31 + vector.z * 3.19) *
+      (part.viewer3DTarget?.kind === "area" ? 0.8 : 1.2),
+  );
 }
 
 function findPartTemperaturePoints(

@@ -10,6 +10,7 @@ import {
   Box,
   Maximize2,
   MousePointer2,
+  RotateCcw,
   SquareDashedMousePointer,
   Upload,
   X,
@@ -76,6 +77,7 @@ type AssetCameraPanelProps = {
   onCameraSelect: (cameraId: CameraMode) => void;
   onCancelAssetPart: () => void;
   onCreateAssetPart: (area: AssetPartConfig) => void;
+  onDeleteAssetPart?: (partId: string) => void;
   onSelectAssetPart: (partId: string | undefined) => void;
   onUpdateAssetPart: (area: AssetPartConfig) => void;
   initialViewMode?: Model3DViewType;
@@ -165,9 +167,10 @@ export function AssetCameraPanel({
   onCameraSelect,
   onCancelAssetPart,
   onCreateAssetPart,
+  onDeleteAssetPart,
   onSelectAssetPart,
   onUpdateAssetPart,
-  initialViewMode = "camera",
+  initialViewMode = "3d",
   onViewer3DConfigChange,
   onViewer3DModelFileChange,
   temperatureData = [],
@@ -253,6 +256,17 @@ export function AssetCameraPanel({
         (item) => item.target.id === selectedViewer3DAnalysisTargetId,
       )
     : undefined;
+
+  useEffect(() => {
+    if (
+      selectedAssetPartId &&
+      viewer3DAnalysisTargets.some(
+        (target) => target.id === selectedAssetPartId,
+      )
+    ) {
+      setSelectedViewer3DAnalysisTargetId(selectedAssetPartId);
+    }
+  }, [selectedAssetPartId, viewer3DAnalysisTargets]);
 
   useEffect(() => {
     setCanRenderPreviewPortal(true);
@@ -565,11 +579,9 @@ export function AssetCameraPanel({
   };
 
   const handleViewer3DAnalysisModeChange = (
-    mode: Viewer3DAnalysisMode,
+    mode: Viewer3DAnalysisMode | undefined,
   ) => {
-    setViewer3DAnalysisMode((currentMode) =>
-      currentMode === mode ? undefined : mode,
-    );
+    setViewer3DAnalysisMode(mode);
   };
 
   const handleViewer3DAnalysisTargetCreate = (
@@ -598,6 +610,7 @@ export function AssetCameraPanel({
       nextTarget,
     ]);
     setSelectedViewer3DAnalysisTargetId(nextTarget.id);
+    onCreateAssetPart(toAssetPartFromViewer3DAnalysisTarget(nextTarget));
   };
 
   const handleViewer3DAnalysisTargetUpdate = (
@@ -609,6 +622,12 @@ export function AssetCameraPanel({
       ),
     );
     setSelectedViewer3DAnalysisTargetId(nextTarget.id);
+    onUpdateAssetPart(toAssetPartFromViewer3DAnalysisTarget(nextTarget));
+  };
+
+  const handleViewer3DAnalysisTargetSelect = (targetId: string) => {
+    setSelectedViewer3DAnalysisTargetId(targetId);
+    onSelectAssetPart(targetId);
   };
 
   const handleViewer3DAnalysisTargetDelete = (targetId: string) => {
@@ -623,6 +642,10 @@ export function AssetCameraPanel({
 
       return nextTargets;
     });
+    onDeleteAssetPart?.(targetId);
+    if (selectedViewer3DAnalysisTargetId === targetId) {
+      onSelectAssetPart(undefined);
+    }
   };
 
   const handleSave = () => {
@@ -671,22 +694,24 @@ export function AssetCameraPanel({
           </div>
         </div>
         <div className="AssetCameraPanel AssetCameraPanel__container-4 mb-1 flex justify-end mr-1">
-          <label className="AssetCameraPanel AssetCameraPanel__field-1 flex min-w-[8.5rem] items-center gap-1 rounded-md border border-border bg-background px-2 text-[11px] font-semibold text-muted-foreground">
-            <span className="AssetCameraPanel AssetCameraPanel__label-2 shrink-0">
-              카메라
-            </span>
-            <select
-              className="AssetCameraPanel AssetCameraPanel__select-1 h-7 min-w-0 flex-1 bg-transparent text-xs font-semibold text-foreground outline-none"
-              value={selectedCamera.id}
-              onChange={(event) => onCameraSelect(event.target.value)}
-            >
-              {availableCameraFeeds.map((camera) => (
-                <option key={camera.id} value={camera.id}>
-                  {camera.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {viewMode === "camera" ? (
+            <label className="AssetCameraPanel AssetCameraPanel__field-1 flex min-w-[8.5rem] items-center gap-1 rounded-md border border-border bg-background px-2 text-[11px] font-semibold text-muted-foreground">
+              <span className="AssetCameraPanel AssetCameraPanel__label-2 shrink-0">
+                카메라
+              </span>
+              <select
+                className="AssetCameraPanel AssetCameraPanel__select-1 h-7 min-w-0 flex-1 bg-transparent text-xs font-semibold text-foreground outline-none"
+                value={selectedCamera.id}
+                onChange={(event) => onCameraSelect(event.target.value)}
+              >
+                {availableCameraFeeds.map((camera) => (
+                  <option key={camera.id} value={camera.id}>
+                    {camera.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       </div>
       <div className="AssetCameraPanel AssetCameraPanel__container-5 grid min-h-0 flex-1 place-items-center overflow-hidden rounded-md border border-border bg-neutral-950/85 p-1 [container-type:size]">
@@ -865,7 +890,7 @@ export function AssetCameraPanel({
                             handleViewer3DAnalysisTargetCreate
                           }
                           onAnalysisTargetSelect={
-                            setSelectedViewer3DAnalysisTargetId
+                            handleViewer3DAnalysisTargetSelect
                           }
                           onConfigChange={handleViewer3DConfigChange}
                           onModelFileChange={handleViewer3DModelFileChange}
@@ -887,7 +912,7 @@ export function AssetCameraPanel({
                       selectedTargetId={selectedViewer3DAnalysisTargetId}
                       onDelete={handleViewer3DAnalysisTargetDelete}
                       onModeChange={handleViewer3DAnalysisModeChange}
-                      onSelect={setSelectedViewer3DAnalysisTargetId}
+                      onSelect={handleViewer3DAnalysisTargetSelect}
                       onUpdate={handleViewer3DAnalysisTargetUpdate}
                       />
                   </div>
@@ -1048,7 +1073,7 @@ function Viewer3DAnalysisPanel({
   selectedItem?: Viewer3DAnalysisPanelItem;
   selectedTargetId?: string;
   onDelete: (targetId: string) => void;
-  onModeChange: (mode: Viewer3DAnalysisMode) => void;
+  onModeChange: (mode: Viewer3DAnalysisMode | undefined) => void;
   onSelect: (targetId: string) => void;
   onUpdate: (target: Viewer3DAnalysisTarget) => void;
 }) {
@@ -1060,10 +1085,16 @@ function Viewer3DAnalysisPanel({
       <div className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__stack-1 grid min-h-0 gap-2 overflow-y-auto pr-1">
         <ControlSection icon={SquareDashedMousePointer} title="정밀 분석">
           <div
-            className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__modes-1 grid grid-cols-2 gap-1.5"
+            className="Viewer3DAnalysisPanel Viewer3DAnalysisPanel__modes-1 grid grid-cols-3 gap-1.5"
             role="group"
             aria-label="3D 분석 대상 추가"
           >
+            <ModeButton
+              active={!activeMode}
+              icon={RotateCcw}
+              label="탐색"
+              onClick={() => onModeChange(undefined)}
+            />
             <ModeButton
               active={activeMode === "point"}
               icon={MousePointer2}
@@ -1308,6 +1339,77 @@ function getPrimaryTextureSource(modelFile: Model3DFile | null) {
   )?.source;
 }
 
+function toAssetPartFromViewer3DAnalysisTarget(
+  target: Viewer3DAnalysisTarget,
+): AssetPartConfig {
+  const targetPoint = getViewer3DTargetPercentPoint(target);
+  const mode = target.kind === "area" ? "area" : "points";
+
+  return {
+    id: target.id,
+    linkedAlarm: target.linkedAlarm,
+    mode,
+    name: target.name,
+    points:
+      mode === "points"
+        ? [
+            {
+              id: `${target.id}-point`,
+              x: targetPoint.x,
+              y: targetPoint.y,
+            },
+          ]
+        : [],
+    roi: mode === "area" ? getViewer3DTargetPercentRoi(target) : undefined,
+    source: "3d",
+    thresholds: target.thresholds,
+    viewer3DTarget: {
+      color: target.color,
+      kind: target.kind,
+      previewImageDataUrl: target.previewImageDataUrl,
+      worldArea: target.worldArea,
+      worldPosition: target.worldPosition,
+    },
+  };
+}
+
+function getViewer3DTargetPercentRoi(
+  target: Viewer3DAnalysisTarget,
+): DetectionRoiConfig {
+  const center = getViewer3DTargetPercentPoint(target);
+
+  if (!target.worldArea) {
+    return getCenteredPercentRoi(center, 14, 14);
+  }
+
+  const start = getViewer3DVectorPercentPoint(target.worldArea.start);
+  const end = getViewer3DVectorPercentPoint(target.worldArea.end);
+  const left = Math.min(start.x, end.x);
+  const top = Math.min(start.y, end.y);
+  const width = Math.min(42, Math.max(10, Math.abs(end.x - start.x)));
+  const height = Math.min(42, Math.max(10, Math.abs(end.y - start.y)));
+
+  return {
+    height: roundPercent(height),
+    width: roundPercent(width),
+    x: roundPercent(clampNumber(left, 0, 100 - width)),
+    y: roundPercent(clampNumber(top, 0, 100 - height)),
+  };
+}
+
+function getCenteredPercentRoi(
+  center: PercentPoint,
+  width: number,
+  height: number,
+): DetectionRoiConfig {
+  return {
+    height,
+    width,
+    x: roundPercent(clampNumber(center.x - width / 2, 0, 100 - width)),
+    y: roundPercent(clampNumber(center.y - height / 2, 0, 100 - height)),
+  };
+}
+
 function buildViewer3DAnalysisSummary({
   assetParts,
   assetPartStates,
@@ -1450,9 +1552,17 @@ function getAssetPartAnchorPoint(part: AssetPartConfig, index: number) {
 }
 
 function getViewer3DTargetPercentPoint(target: Viewer3DAnalysisTarget) {
+  return getViewer3DVectorPercentPoint(target.worldPosition);
+}
+
+function getViewer3DVectorPercentPoint(vector: {
+  x: number;
+  y: number;
+  z: number;
+}) {
   return {
-    x: clampNumber(50 + target.worldPosition.x * 28, 0, 100),
-    y: clampNumber(50 - target.worldPosition.y * 28, 0, 100),
+    x: roundPercent(clampNumber(50 + vector.x * 28, 0, 100)),
+    y: roundPercent(clampNumber(50 - vector.y * 28, 0, 100)),
   };
 }
 

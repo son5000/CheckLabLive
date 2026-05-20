@@ -9,6 +9,7 @@ export type Viewer3DAnalysisArea = {
 
 export type Viewer3DAnalysisDraft = {
   kind: Viewer3DAnalysisMode;
+  previewImageDataUrl?: string;
   worldArea?: Viewer3DAnalysisArea;
   worldPosition: Vector3;
 };

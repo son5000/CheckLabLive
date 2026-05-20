@@ -167,7 +167,7 @@ export function AssetPartList({
                     {/* 파트 지정 방식 + 범위 */}
                     <p className="AssetPartList AssetPartList__text-2 truncate text-[10px] text-muted-foreground">
                       <span className="rounded-sm border border-border bg-background px-1 py-0.5 font-medium">
-                        {part.mode === "area" ? "영역 ROI" : "포인트 지정"}
+                        {getAssetPartModeLabel(part)}
                       </span>
                       {"  "}
                       {formatAssetPartScope(part)}
@@ -237,6 +237,18 @@ function AssetPartDetailRow({
 }
 
 function formatAssetPartScope(part: AssetPartConfig) {
+  if (part.source === "3d" && part.viewer3DTarget) {
+    const { worldArea, worldPosition } = part.viewer3DTarget;
+
+    if (part.viewer3DTarget.kind === "area" && worldArea) {
+      return `3D 범위 ${formatVector3(worldArea.start)} → ${formatVector3(
+        worldArea.end,
+      )}`;
+    }
+
+    return `3D 좌표 ${formatVector3(worldPosition)}`;
+  }
+
   if (part.mode === "area" && part.roi) {
     return `좌표 ${part.roi.x}, ${part.roi.y} · 크기 ${part.roi.width} × ${part.roi.height}`;
   }
@@ -246,6 +258,22 @@ function formatAssetPartScope(part: AssetPartConfig) {
   }
 
   return "감지 범위 산출 대기";
+}
+
+function getAssetPartModeLabel(part: AssetPartConfig) {
+  if (part.source === "3d") {
+    return part.viewer3DTarget?.kind === "area" ? "3D 영역" : "3D 포인트";
+  }
+
+  return part.mode === "area" ? "영역 ROI" : "포인트 지정";
+}
+
+function formatVector3(vector: { x: number; y: number; z: number }) {
+  return `${formatCompactNumber(vector.x)}, ${formatCompactNumber(vector.y)}, ${formatCompactNumber(vector.z)}`;
+}
+
+function formatCompactNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 function isCriticalThresholdExceeded(

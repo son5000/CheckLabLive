@@ -25,7 +25,13 @@ type ManagementMenuSectionProps = {
   isCollapsed: boolean;
 };
 
+const SHOW_MANAGEMENT_MENU_SECTION = false;
+
 export function ManagementMenuSection({ items, isCollapsed }: ManagementMenuSectionProps) {
+  if (!SHOW_MANAGEMENT_MENU_SECTION) {
+    return null;
+  }
+
   return (
     <section className="ManagementMenuSection ManagementMenuSection__section-1 shrink-0 overflow-hidden rounded-md border border-sidebar-border bg-background/45 p-2">
       <div className={cn("ManagementMenuSection ManagementMenuSection__container-1 mb-1.5 flex h-5 items-center gap-1.5", isCollapsed && "md:justify-center")}>

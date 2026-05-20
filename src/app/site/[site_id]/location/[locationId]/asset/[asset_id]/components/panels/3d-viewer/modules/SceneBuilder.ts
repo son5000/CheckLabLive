@@ -17,6 +17,7 @@ export class SceneBuilder {
       alpha: true,
       antialias: true,
       powerPreference: "high-performance",
+      preserveDrawingBuffer: true,
     });
 
     renderer.outputColorSpace = THREE.SRGBColorSpace;

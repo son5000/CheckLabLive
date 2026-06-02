@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -34,116 +35,59 @@ import {
   updateSite as updateManagedSite,
 } from "@/app/site/services/site-management-client";
 import type {
-  ApiCreateAssetRequest,
-  ApiCreateLocationRequest,
-  ApiCreateSiteRequest,
   ApiSiteManagementResponse,
-  ApiUpdateAssetRequest,
-  ApiUpdateLocationRequest,
-  ApiUpdateSiteRequest,
+  ApiSiteSummary,
 } from "@/app/site/services/site-management-api";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-type SiteBuilderSite = {
-  alertCount: number;
-  description: string;
-  assetCount: number;
-  imageUrl?: string;
-  locationCount: number;
-  locations: SiteBuilderLocation[];
-  name: string;
-  site_id: string;
-  status: DashboardStatus;
-};
-
-type SiteBuilderLocation = {
-  assets: SiteBuilderAsset[];
-  floor: string;
-  imageUrl?: string;
-  location_id: string;
-  name: string;
-  status: DashboardStatus;
-  summary: string;
-};
-
-type SiteBuilderAsset = {
-  asset_code: string;
-  asset_id: string;
-  description: string;
-  imageUrl?: string;
-  manager: string;
-  name: string;
-  status: DashboardStatus;
-  type: string;
-};
-
-// "site" → 공정 등록, "location" → 위치 등록, "asset" → 설비 등록
-type SiteEditorStep = "site" | "location" | "asset";
-type SiteApiMessage = {
-  tone: "error" | "success";
-  text: string;
-};
-type SiteMutationAction =
-  | "asset-delete"
-  | "asset-save"
-  | "location-delete"
-  | "location-save"
-  | "site-delete"
-  | "site-save";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const SITE_BUILDER_STORAGE_KEY = "checklab:site-builder-sites";
-
-const emptySite: SiteBuilderSite = {
-  alertCount: 0,
-  description: "",
-  assetCount: 0,
-  locationCount: 0,
-  locations: [],
-  name: "",
-  site_id: "",
-  status: "normal",
-};
-
-const emptyLocation: SiteBuilderLocation = {
-  assets: [],
-  floor: "",
-  location_id: "",
-  name: "",
-  status: "normal",
-  summary: "",
-};
-
-const emptyAsset: SiteBuilderAsset = {
-  asset_code: "",
-  asset_id: "",
-  description: "",
-  manager: "",
-  name: "",
-  status: "normal",
-  type: "",
-};
-
-const statusOptions: { label: string; value: DashboardStatus }[] = [
-  { label: "정상", value: "normal" },
-  { label: "요주의", value: "caution" },
-  { label: "경고", value: "warning" },
-  { label: "이상", value: "danger" },
-  { label: "오류", value: "error" },
-];
+import {
+  applyAssetResponse,
+  applyLocationResponse,
+  applySiteResponse,
+  EMPTY_INITIAL_SITES,
+  emptyAsset,
+  emptyLocation,
+  emptySite,
+  getApiErrorMessage,
+  getItemAt,
+  normalizeAsset,
+  normalizeLocation,
+  normalizeSite,
+  readStoredSites,
+  recalculateSiteCounts,
+  SITE_BUILDER_STORAGE_KEY,
+  statusOptions,
+  toCreateAssetPayload,
+  toCreateLocationPayload,
+  toCreateSitePayload,
+  toSiteBuilderSite,
+  toUpdateAssetPayload,
+  toUpdateLocationPayload,
+  toUpdateSitePayload,
+} from "@/app/site/components/site-builder-model";
+import type {
+  SiteApiMessage,
+  SiteBuilderAsset,
+  SiteBuilderLocation,
+  SiteBuilderSite,
+  SiteEditorStep,
+  SiteMutationAction,
+} from "@/app/site/components/site-builder-model";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Page
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function SiteIndexPage() {
-  const [sites, setSites] = useState<SiteBuilderSite[]>([]);
+type SiteIndexPageProps = {
+  initialSites?: ApiSiteSummary[];
+};
+
+export function SiteIndexPage({
+  initialSites = EMPTY_INITIAL_SITES,
+}: SiteIndexPageProps) {
+  const initialBackendSites = useMemo(
+    () => initialSites.map(toSiteBuilderSite),
+    [initialSites],
+  );
+  const [sites, setSites] = useState<SiteBuilderSite[]>(initialBackendSites);
   const [hasLoadedStoredSites, setHasLoadedStoredSites] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [activeSiteIndex, setActiveSiteIndex] = useState<number>();
@@ -184,10 +128,8 @@ export function SiteIndexPage() {
       sites.reduce(
         (currentTotals, site) => ({
           alerts: currentTotals.alerts + site.alertCount,
-          assets:
-            currentTotals.assets +
-            site.locations.reduce((count, loc) => count + loc.assets.length, 0),
-          locations: currentTotals.locations + site.locations.length,
+          assets: currentTotals.assets + site.assetCount,
+          locations: currentTotals.locations + site.locationCount,
           sites: currentTotals.sites + 1,
         }),
         { alerts: 0, assets: 0, locations: 0, sites: 0 },
@@ -198,6 +140,14 @@ export function SiteIndexPage() {
   // ── Storage ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (initialBackendSites.length) {
+      setSites(initialBackendSites);
+      setActiveSiteIndex(0);
+      setDraftSite(initialBackendSites[0]);
+      setHasLoadedStoredSites(true);
+      return;
+    }
+
     const storedSites = readStoredSites();
     if (storedSites.length) {
       setSites(storedSites);
@@ -205,7 +155,7 @@ export function SiteIndexPage() {
       setDraftSite(storedSites[0]);
     }
     setHasLoadedStoredSites(true);
-  }, []);
+  }, [initialBackendSites]);
 
   useEffect(() => {
     if (!hasLoadedStoredSites) return;
@@ -1345,11 +1295,10 @@ export function SiteIndexPage() {
               // 공정이 있을 때: 카드 리스트
               <div className="flex-1 overflow-y-auto p-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {sites.map((site, siteIndex) => (
-                    <button
+                  {sites.map((site) => (
+                    <Link
                       key={site.site_id}
-                      type="button"
-                      onClick={() => handleSelectSite(siteIndex)}
+                      href={`/site/${encodeURIComponent(site.site_id)}`}
                       className="SiteIndexPage SiteIndexPage__site-card-1 group grid gap-3 rounded-lg border border-border bg-background p-4 text-left transition hover:border-cyan-300/50 hover:bg-cyan-300/5"
                     >
                       {site.imageUrl && (
@@ -1393,7 +1342,7 @@ export function SiteIndexPage() {
                           <p className="mt-1 text-sm font-bold text-orange-500">{site.alertCount}</p>
                         </div>
                       </div>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -1585,337 +1534,4 @@ function Metric({ label, value }: { label: string; value: number }) {
       </p>
     </div>
   );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Utilities
-// ─────────────────────────────────────────────────────────────────────────────
-
-function getItemAt<T>(items: T[] | undefined, index: number | undefined) {
-  return index === undefined ? undefined : items?.[index];
-}
-
-function normalizeSite(site: SiteBuilderSite): SiteBuilderSite {
-  return recalculateSiteCounts({
-    ...site,
-    description: site.description.trim(),
-    imageUrl: site.imageUrl?.trim() || undefined,
-    locations: Array.isArray(site.locations)
-      ? site.locations.map(normalizeLocation)
-      : [],
-    name: site.name.trim(),
-    site_id: site.site_id.trim(),
-  });
-}
-
-function normalizeLocation(location: SiteBuilderLocation): SiteBuilderLocation {
-  return {
-    ...location,
-    assets: Array.isArray(location.assets)
-      ? location.assets.map(normalizeAsset)
-      : [],
-    floor: location.floor.trim(),
-    imageUrl: location.imageUrl?.trim() || undefined,
-    location_id: location.location_id.trim(),
-    name: location.name.trim(),
-    summary: location.summary.trim(),
-  };
-}
-
-function normalizeAsset(asset: SiteBuilderAsset): SiteBuilderAsset {
-  return {
-    ...asset,
-    asset_id: asset.asset_id.trim(),
-    asset_code: asset.asset_code.trim(),
-    description: asset.description?.trim() ?? "",
-    imageUrl: asset.imageUrl?.trim() || undefined,
-    manager: asset.manager.trim(),
-    name: asset.name.trim(),
-    type: asset.type.trim(),
-  };
-}
-
-function toCreateSitePayload(site: SiteBuilderSite): ApiCreateSiteRequest {
-  const locations = site.locations
-    .map(toCreateSiteLocationPayload)
-    .filter((location) => location.name.trim().length > 0);
-
-  return {
-    description: site.description,
-    ...(locations.length ? { locations } : {}),
-    process_name: site.name,
-  };
-}
-
-function toCreateSiteLocationPayload(
-  location: SiteBuilderLocation,
-): NonNullable<ApiCreateSiteRequest["locations"]>[number] {
-  const assets = location.assets
-    .map(toCreateSiteAssetPayload)
-    .filter((asset) => asset.name.trim().length > 0);
-
-  return {
-    ...(assets.length ? { assets } : {}),
-    description: location.summary,
-    floor: location.floor,
-    name: location.name,
-  };
-}
-
-function toCreateSiteAssetPayload(
-  asset: SiteBuilderAsset,
-): NonNullable<
-  NonNullable<ApiCreateSiteRequest["locations"]>[number]["assets"]
->[number] {
-  return {
-    description: asset.description,
-    name: asset.name,
-  };
-}
-
-function toUpdateSitePayload(site: SiteBuilderSite): ApiUpdateSiteRequest {
-  return {
-    description: site.description,
-    process_name: site.name,
-  };
-}
-
-function toCreateLocationPayload(
-  site_id: string,
-  location: SiteBuilderLocation,
-): ApiCreateLocationRequest {
-  return {
-    description: location.summary,
-    floor: location.floor,
-    name: location.name,
-    site_id,
-  };
-}
-
-function toUpdateLocationPayload(
-  location: SiteBuilderLocation,
-): ApiUpdateLocationRequest {
-  return {
-    description: location.summary,
-    floor: location.floor,
-    name: location.name,
-  };
-}
-
-function toCreateAssetPayload(
-  location_id: string,
-  asset: SiteBuilderAsset,
-): ApiCreateAssetRequest {
-  return {
-    description: asset.description,
-    location_id,
-    name: asset.name,
-  };
-}
-
-function toUpdateAssetPayload(asset: SiteBuilderAsset): ApiUpdateAssetRequest {
-  return {
-    description: asset.description,
-    name: asset.name,
-  };
-}
-
-function applySiteResponse(
-  fallbackSite: SiteBuilderSite,
-  response: unknown,
-): SiteBuilderSite {
-  const record = toResponseRecord(
-    response,
-    ["site", "process"],
-    ["site_id", "process_id", "id"],
-  );
-  const responseLocations = readRecordArray(record, "locations");
-  const locations = responseLocations
-    ? responseLocations.map((location, index) =>
-        applyLocationResponse(
-          fallbackSite.locations[index] ?? emptyLocation,
-          location,
-        ),
-      )
-    : fallbackSite.locations;
-
-  return recalculateSiteCounts({
-    ...fallbackSite,
-    description:
-      readRecordString(record, ["description", "summary"]) ??
-      fallbackSite.description,
-    locations,
-    name:
-      readRecordString(record, ["process_name", "name"]) ?? fallbackSite.name,
-    site_id:
-      readRecordString(record, ["site_id", "process_id", "id"]) ??
-      fallbackSite.site_id,
-  });
-}
-
-function applyLocationResponse(
-  fallbackLocation: SiteBuilderLocation,
-  response: unknown,
-): SiteBuilderLocation {
-  const record = toResponseRecord(
-    response,
-    ["location"],
-    ["location_id", "id"],
-  );
-  const responseAssets = readRecordArray(record, "assets");
-  const assets = responseAssets
-    ? responseAssets.map((asset, index) =>
-        applyAssetResponse(fallbackLocation.assets[index] ?? emptyAsset, asset),
-      )
-    : fallbackLocation.assets;
-
-  return {
-    ...fallbackLocation,
-    assets,
-    floor: readRecordString(record, ["floor"]) ?? fallbackLocation.floor,
-    location_id:
-      readRecordString(record, ["location_id", "id"]) ??
-      fallbackLocation.location_id,
-    name: readRecordString(record, ["name"]) ?? fallbackLocation.name,
-    status: readRecordStatus(record) ?? fallbackLocation.status,
-    summary:
-      readRecordString(record, ["description", "summary"]) ??
-      fallbackLocation.summary,
-  };
-}
-
-function applyAssetResponse(
-  fallbackAsset: SiteBuilderAsset,
-  response: unknown,
-): SiteBuilderAsset {
-  const record = toResponseRecord(
-    response,
-    ["asset"],
-    ["asset_id", "id"],
-  );
-
-  return {
-    ...fallbackAsset,
-    asset_code:
-      readRecordString(record, ["asset_code", "assetCode"]) ??
-      fallbackAsset.asset_code,
-    asset_id:
-      readRecordString(record, ["asset_id", "id"]) ?? fallbackAsset.asset_id,
-    description:
-      readRecordString(record, ["description", "summary"]) ??
-      fallbackAsset.description,
-    manager:
-      readRecordString(record, ["manager", "manager_name"]) ??
-      fallbackAsset.manager,
-    name: readRecordString(record, ["name"]) ?? fallbackAsset.name,
-    status: readRecordStatus(record) ?? fallbackAsset.status,
-    type:
-      readRecordString(record, ["type", "asset_type"]) ?? fallbackAsset.type,
-  };
-}
-
-function toResponseRecord(
-  value: unknown,
-  nestedKeys: string[] = [],
-  entityKeys: string[] = [],
-) {
-  const record = toPlainRecord(value);
-  if (!record) return undefined;
-  if (hasAnyRecordKey(record, entityKeys)) return record;
-
-  const directNestedRecord = findNestedRecord(record, nestedKeys);
-  if (directNestedRecord) return directNestedRecord;
-
-  const wrappedRecord = findNestedRecord(record, ["data", "result"]);
-  if (!wrappedRecord) return record;
-
-  return findNestedRecord(wrappedRecord, nestedKeys) ?? wrappedRecord;
-}
-
-function toPlainRecord(value: unknown) {
-  return typeof value === "object" && value !== null
-    ? (value as Record<string, unknown>)
-    : undefined;
-}
-
-function findNestedRecord(
-  record: Record<string, unknown>,
-  keys: string[],
-) {
-  for (const key of keys) {
-    const nestedRecord = toPlainRecord(record[key]);
-    if (nestedRecord) return nestedRecord;
-  }
-
-  return undefined;
-}
-
-function hasAnyRecordKey(
-  record: Record<string, unknown>,
-  keys: string[],
-) {
-  return keys.some((key) => record[key] !== undefined && record[key] !== null);
-}
-
-function readRecordArray(
-  record: Record<string, unknown> | undefined,
-  key: string,
-) {
-  const value = record?.[key];
-
-  return Array.isArray(value) ? value : undefined;
-}
-
-function readRecordString(
-  record: Record<string, unknown> | undefined,
-  keys: string[],
-) {
-  for (const key of keys) {
-    const value = record?.[key];
-
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
-  }
-
-  return undefined;
-}
-
-function readRecordStatus(record: Record<string, unknown> | undefined) {
-  const status = readRecordString(record, ["status", "dashboard_status"]);
-
-  return isDashboardStatus(status) ? status : undefined;
-}
-
-function isDashboardStatus(value: string | undefined): value is DashboardStatus {
-  return Boolean(value && statusOptions.some((option) => option.value === value));
-}
-
-function recalculateSiteCounts(site: SiteBuilderSite): SiteBuilderSite {
-  return {
-    ...site,
-    assetCount: site.locations.reduce(
-      (count, loc) => count + loc.assets.length,
-      0,
-    ),
-    locationCount: site.locations.length,
-  };
-}
-
-function getApiErrorMessage(error: unknown, fallbackMessage: string) {
-  return error instanceof Error && error.message
-    ? error.message
-    : fallbackMessage;
-}
-
-function readStoredSites() {
-  try {
-    const storedValue = window.localStorage.getItem(SITE_BUILDER_STORAGE_KEY);
-    if (!storedValue) return [];
-    const parsedValue = JSON.parse(storedValue) as SiteBuilderSite[];
-    return Array.isArray(parsedValue) ? parsedValue.map(normalizeSite) : [];
-  } catch (error) {
-    console.warn("Failed to read site builder storage.", error);
-    return [];
-  }
 }

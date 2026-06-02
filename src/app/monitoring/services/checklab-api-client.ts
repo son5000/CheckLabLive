@@ -1,5 +1,7 @@
 ﻿const DEFAULT_CHECKLAB_API_BASE_URL = "http://192.168.219.46:8000";
 
+const DEFAULT_CHECKLAB_API_TIMEOUT_MS = 3_000;
+
 /**
  * 역할
  * - CheckLab 백엔드 API를 호출할 때 공통으로 쓰는 URL/JSON 요청 클라이언트입니다.
@@ -24,6 +26,7 @@ type CheckLabJsonRequestOptions = {
   context?: Record<string, unknown>;
   method?: "DELETE" | "GET" | "POST" | "PUT";
   requestName: string;
+  timeoutMs?: number;
 };
 
 export function buildCheckLabApiUrl(
@@ -66,17 +69,36 @@ export async function requestCheckLabJson<T>(
     context,
     method = "GET",
     requestName,
+    timeoutMs = DEFAULT_CHECKLAB_API_TIMEOUT_MS,
   }: CheckLabJsonRequestOptions,
 ): Promise<T> {
-  const response = await fetch(url, {
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: "no-store",
-    headers: {
-      accept: "application/json",
-      ...(body === undefined ? {} : { "content-type": "application/json" }),
-    },
-    method,
-  });
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+      headers: {
+        accept: "application/json",
+        ...(body === undefined ? {} : { "content-type": "application/json" }),
+      },
+      method,
+      signal: abortController.signal,
+    });
+  } catch (error) {
+    console.error(`[CheckLab API] ${requestName} request unavailable`, {
+      ...context,
+      error,
+      timeoutMs,
+      url: String(url),
+    });
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     console.error(`[CheckLab API] ${requestName} failed`, {

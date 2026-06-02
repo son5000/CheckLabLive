@@ -28,10 +28,11 @@ export async function GET(
       error,
     });
 
-    return Response.json(
-      { message: "Failed to load asset events." },
-      { status: 502 },
-    );
+    return Response.json([], {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   }
 }
 

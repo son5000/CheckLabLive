@@ -19,8 +19,20 @@ export async function GET(request: Request) {
     console.error("[CheckLab API] alert summary proxy failed", { error });
 
     return Response.json(
-      { message: "Failed to load alert summary." },
-      { status: 502 },
+      {
+        abnormal_count: 0,
+        caution_count: 0,
+        latest_created_at: null,
+        normal_count: 0,
+        total_count: 0,
+        unread_count: 0,
+        warning_count: 0,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   }
 }

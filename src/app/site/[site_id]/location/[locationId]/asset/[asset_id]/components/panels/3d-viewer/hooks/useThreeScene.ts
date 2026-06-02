@@ -17,13 +17,13 @@ export function useThreeScene(
   const controlsRef = useRef<OrbitControls | null>(null);
   const initialConfigRef = useRef(config);
   const animationConfigRef = useRef({
-    autoRotate: config.autoRotate ?? false,
+    autoRotate: config.autoRotate ?? true,
     autoRotateSpeed: config.controls?.autoRotateSpeed ?? 0.7,
   });
 
   useEffect(() => {
     animationConfigRef.current = {
-      autoRotate: config.autoRotate ?? false,
+      autoRotate: config.autoRotate ?? true,
       autoRotateSpeed: config.controls?.autoRotateSpeed ?? 0.7,
     };
   }, [config.autoRotate, config.controls?.autoRotateSpeed]);

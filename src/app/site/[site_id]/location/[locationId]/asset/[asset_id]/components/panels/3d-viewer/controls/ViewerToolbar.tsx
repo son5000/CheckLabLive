@@ -3,7 +3,7 @@
 import {
   MousePointer2,
   RefreshCw,
-  RotateCcw,
+  RotateCw,
   Settings2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -47,7 +47,7 @@ export function ViewerToolbar({
       <div className="ViewerToolbar ViewerToolbar__actions-1 flex shrink-0 items-center gap-1">
         <ToolbarIconButton
           active={config.autoRotate}
-          icon={RotateCcw}
+          icon={RotateCw}
           label="자동 회전"
           onClick={() => onChange({ ...config, autoRotate: !config.autoRotate })}
         />

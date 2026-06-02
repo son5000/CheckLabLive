@@ -32,6 +32,11 @@ export function SiteSummaryPage({
   locations,
   assets,
 }: SiteSummaryPageProps) {
+  const locationCount = site.locationCount || locations.length;
+  const assetCount =
+    site.assetCount ||
+    locations.reduce((count, location) => count + location.assetCount, 0) ||
+    assets.length;
   const warningAssetCount = assets.filter(
     (asset) => asset.status !== "normal",
   ).length;
@@ -56,8 +61,8 @@ export function SiteSummaryPage({
             </span>
           </div>
           <div className="SiteSummaryPage SiteSummaryPage__container-4 mt-3 grid gap-2 sm:grid-cols-4">
-            <SummaryMetric icon={MapPin} label="위치" value={`${locations.length}개`} />
-            <SummaryMetric icon={Gauge} label="설비" value={`${assets.length}대`} />
+            <SummaryMetric icon={MapPin} label="위치" value={`${locationCount}개`} />
+            <SummaryMetric icon={Gauge} label="설비" value={`${assetCount}대`} />
             <SummaryMetric icon={AlertTriangle} label="주요 알림" value={`${site.alertCount}건`} />
             <SummaryMetric icon={Building2} label="관찰 설비" value={`${warningAssetCount}대`} />
           </div>

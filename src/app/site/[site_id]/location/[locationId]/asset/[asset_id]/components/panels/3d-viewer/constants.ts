@@ -21,7 +21,7 @@ export const DEFAULT_MODEL_3D_FILE: Model3DFile = {
 };
 
 export const DEFAULT_VIEWER_3D_CONFIG: Viewer3DConfig = {
-  autoRotate: false,
+  autoRotate: true,
   background: {
     color: "#111827",
     gridColor: "#475569",

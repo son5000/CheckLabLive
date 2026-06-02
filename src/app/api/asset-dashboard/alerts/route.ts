@@ -21,10 +21,11 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("[CheckLab API] global alerts proxy failed", { error });
 
-    return Response.json(
-      { message: "Failed to load global alerts." },
-      { status: 502 },
-    );
+    return Response.json([], {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   }
 }
 

@@ -1,9 +1,29 @@
 import {
   createSite,
+  fetchSites,
   type ApiCreateSiteRequest,
 } from "@/app/site/services/site-management-api";
 
 export const dynamic = "force-dynamic";
+
+export async function GET() {
+  try {
+    const result = await fetchSites();
+
+    return Response.json(result, {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error) {
+    console.error("[CheckLab API] site list proxy failed", { error });
+
+    return Response.json(
+      { message: "Failed to load sites." },
+      { status: 502 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {

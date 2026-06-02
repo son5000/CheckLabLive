@@ -32,10 +32,11 @@ export async function GET(
       error,
     });
 
-    return Response.json(
-      { message: "Failed to load asset alerts." },
-      { status: 502 },
-    );
+    return Response.json([], {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   }
 }
 

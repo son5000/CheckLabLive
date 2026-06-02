@@ -3,7 +3,10 @@ import {
   buildMonitoringTreeFromAssetContexts,
   fetchDashboardAssetContexts,
 } from "@/app/monitoring/services/dashboard-asset-context";
-import { fetchMonitoringTree } from "@/app/monitoring/services/monitoring-tree-api";
+import {
+  fetchMonitoringTree,
+  getEmptyMonitoringTree,
+} from "@/app/monitoring/services/monitoring-tree-api";
 
 export async function fetchBackendMonitoringTree() {
   try {
@@ -14,13 +17,21 @@ export async function fetchBackendMonitoringTree() {
     });
   }
 
-  const alerts = await fetchAlerts({ limit: 200 });
-  const assetIds = alerts
-    .map((alert) => alert.asset_id?.trim())
-    .filter((asset_id): asset_id is string => Boolean(asset_id));
-  const contexts = await fetchDashboardAssetContexts(
-    Array.from(new Set(assetIds)),
-  );
+  try {
+    const alerts = await fetchAlerts({ limit: 200 });
+    const assetIds = alerts
+      .map((alert) => alert.asset_id?.trim())
+      .filter((asset_id): asset_id is string => Boolean(asset_id));
+    const contexts = await fetchDashboardAssetContexts(
+      Array.from(new Set(assetIds)),
+    );
 
-  return buildMonitoringTreeFromAssetContexts(contexts);
+    return buildMonitoringTreeFromAssetContexts(contexts);
+  } catch (error) {
+    console.warn("[CheckLab API] fallback monitoring tree unavailable", {
+      error,
+    });
+
+    return getEmptyMonitoringTree();
+  }
 }
